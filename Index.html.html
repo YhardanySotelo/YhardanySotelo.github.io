@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sorteador — UEC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- PapaParse -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root{
+      --bg:#0a140f;
+      --card: rgba(255,255,255,0.06);
+      --soft: rgba(255,255,255,0.04);
+      --accent: linear-gradient(135deg, #99fa7e 0, #010400 100%);
+      --glass-border: rgba(255,255,255,0.12);
+      --glass-highlight: rgba(255,255,255,0.06);
+      --text: #eaf2ff;
+      --swal2-confirm-button-background-color: #00951f;
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 10% 10%, rgba(110,231,245,0.06), transparent), radial-gradient(900px 500px at 90% 90%, rgba(183,148,244,0.05), transparent), var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+    .app{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px}
+    .panel{width:1100px;max-width:95%;border-radius:24px;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow: 0 10px 30px rgba(2,6,23,0.6);border:1px solid var(--glass-border);backdrop-filter: blur(14px) saturate(120%);}
+    .header{display:flex;gap:16px;align-items:center}
+    .logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg, #99fa7e 0, #010400 100%);display:flex;align-items:center;justify-content:center;color:#ffffff;font-weight:800;font-size:20px;box-shadow:0 6px 18px rgba(123,97,255,0.12), inset 0 -6px 12px rgba(255,255,255,0.06)}
+    .title{font-size:20px;font-weight:700}
+    .subtitle{font-size:13px;color:rgba(234,242,255,0.7)}
+    .controls{display:flex;gap:12px;align-items:center;margin-top:18px;flex-wrap:wrap}
+    .glass-btn{padding:10px 14px;border-radius:12px;border:1px solid var(--glass-border);background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));cursor:pointer;backdrop-filter: blur(8px); color:#ffffff}
+    .primary{background:var(--accent);color:#072033;font-weight:700;border:none;box-shadow:0 8px 30px rgba(120,80,200,0.14)}
+    .area{display:grid;grid-template-columns: 360px 1fr;gap:18px;margin-top:18px}
+    .card{padding:16px;border-radius:16px;background:var(--card);border:1px solid var(--glass-border);}
+    input[type=file]{display:none}
+    .file-label{display:flex;gap:10px;align-items:center;cursor:pointer}
+    .small{font-size:13px;color:rgba(234,242,255,0.7)}
+    .option-row{display:flex;gap:8px;align-items:center;margin-top:12px}
+    .input-num{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);color:#000000;}
+    .table-wrap{max-height:520px;overflow:auto;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    table{width:100%;border-collapse:collapse;color:var(--text);font-size:13px}
+    th,td{padding:8px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.02)}
+    th{position:sticky;top:0;background:var(--bg);backdrop-filter: blur(6px);z-index: 2;font-weight:600}
+    .empty{opacity:0.6;text-align:center;padding:30px}
+    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;color:rgba(234,242,255,0.6);font-size:13px}
+    .glass-hero{margin-top:14px;padding:14px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);display:flex;gap:12px;align-items:center}
+    .liquid{width:46px;height:46px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;font-weight:700}
+    .table-wrap::-webkit-scrollbar { width: 8px; height: 8px; }
+    .table-wrap::-webkit-scrollbar-track { background: transparent; margin: 4px; }
+    .table-wrap::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1)); border-radius: 12px; backdrop-filter: blur(10px) saturate(160%); -webkit-backdrop-filter: blur(10px) saturate(160%); border: 1px solid rgba(255,255,255,0.2); }
+    .table-wrap::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgba(255,255,255,0.4), rgba(255,255,255,0.2)); }
+
+    .history-panel::-webkit-scrollbar { width: 8px; height: 8px; }
+    .history-panel::-webkit-scrollbar-track { background: transparent; margin: 4px; }
+    .history-panel::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1)); border-radius: 12px; backdrop-filter: blur(10px) saturate(160%); -webkit-backdrop-filter: blur(10px) saturate(160%); border: 1px solid rgba(255,255,255,0.2); }
+    .history-panel::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgba(255,255,255,0.4), rgba(255,255,255,0.2)); }
+
+    @media (max-width:900px){.area{grid-template-columns:1fr}} 
+
+    /* ---------- Liquid Crystal style for SweetAlert ---------- */
+    .swal2-popup.swal2-ios-like{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      color:var(--text);
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+    }
+    .swal2-popup.swal2-ios-like .swal2-title{font-weight:800}
+
+    /* ---------- Countdown modal styles ---------- */
+    .lc-countdown {display:flex;flex-direction:column;align-items:center;gap:12px;padding:6px 0;}
+    .lc-circle{width:220px;height:220px;border-radius:50%;display:flex;align-items:center;justify-content:center;background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), rgba(255,255,255,0.01));border: 1px solid rgba(255,255,255,0.06);box-shadow: 0 10px 30px rgba(12,16,30,0.6), inset 0 6px 18px rgba(255,255,255,0.02);position:relative;overflow:hidden;}
+    .lc-circle::after{content:'';position:absolute;inset:0;background: linear-gradient(120deg, rgba(255,255,255,0.02), transparent 40%);mix-blend-mode: overlay;pointer-events:none;}
+    .lc-number{font-size:84px;font-weight:900;letter-spacing:-3px;color:var(--text);text-shadow: 0 6px 20px rgba(110,231,245,0.08), 0 2px 8px rgba(183,148,244,0.04);}
+    .lc-label{font-size:16px;color: rgba(234,242,255,0.85);font-weight:700;}
+
+    @keyframes lc-pop {0% { transform: scale(0.6); opacity:0; filter: blur(2px);}40% { transform: scale(1.12); opacity:1; filter: blur(0);}100% { transform: scale(1); opacity:1; }}
+    @keyframes lc-glow {0% { box-shadow: 0 0 0px rgba(110,231,245,0.0);}50% { box-shadow: 0 0 40px rgba(110,231,245,0.12);}100% { box-shadow: 0 0 0px rgba(110,231,245,0.0);} }
+    .lc-animate {animation: lc-pop 420ms ease forwards;}
+    .lc-glow {animation: lc-glow 900ms ease-in-out;}
+
+    .lc-orb {position:absolute;width:12px;height:12px;border-radius:50%;background: radial-gradient(circle at 30% 30%, #9ef0ff, #b794f4);opacity:0.85; transform: translate(-50%,-50%); pointer-events:none;filter: blur(6px);}
+
+    /* ---------- Botones Apple/Liquid ---------- */
+    .liquid-btn{width:50px;height:50px;border-radius:14px;border:1px solid rgba(255,255,255,0.15);background:linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));box-shadow:inset 0 1px 2px rgba(255,255,255,0.1),0 4px 14px rgba(0,0,0,0.4);backdrop-filter:blur(12px) saturate(160%);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:all 0.22s ease;position:relative;}
+    .liquid-btn:hover{transform:scale(1.06);box-shadow:0 8px 26px rgba(0,0,0,0.55), inset 0 2px 4px rgba(255,255,255,0.12);}
+    .liquid-btn:active{transform:scale(0.98);}
+    .liquid-btn.primary{background:var(--accent);color:#072033;border:none;box-shadow:0 8px 30px rgba(120,80,200,0.14);}
+    .liquid-btn::after{content: attr(data-tooltip);position:absolute;bottom:-44px;left:50%;transform:translateX(-50%) translateY(-6px);background:rgba(20,20,20,0.92);color:#fff;font-size:12px;padding:6px 10px;border-radius:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.18s ease,transform 0.18s ease;}
+    .liquid-btn:hover::after{opacity:1;transform:translateX(-50%) translateY(0);}
+    .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+
+    /* ---------- Panel Histórico ---------- */
+    .history-panel {margin-top:12px;padding:12px;font-size:13px;color:rgba(234,242,255,0.85);border:1px solid var(--glass-border);border-radius:12px;max-height:180px;overflow-y:auto;background:rgba(255,255,255,0.03);min-height: 350px;}
+    .history-entry {padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.08);}
+    .history-entry strong {color:#99fa7e;}
+    .history-empty {opacity:0.6;text-align:center;padding:20px;}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="panel">
+      <div class="header">
+        <div class="logo">UEC</div>
+        <div>
+          <div class="title">Generador de sorteos - Universidad Externado de Colombia</div>
+          <div class="subtitle">Importa el listado de usuarios, ejecuta sorteos aleatorios y evita ganadores repetidos.</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <label class="liquid-btn file-label" style="background-color: #494d35f5;" data-tooltip="Cargar participantes">
+          <input id="csvfile" type="file" accept="text/csv, .csv">
+          <span class="visually-hidden">Cargar participantes</span>
+          <span aria-hidden="true">📂</span>
+        </label>
+        <button id="drawBtn" class="liquid-btn" style="background-color: #6fb25136;" data-tooltip="Iniciar sorteo">🎲</button>
+        <button id="downloadHistoryBtn" class="liquid-btn" style="background-color: #4c55d33d;" data-tooltip="Descargar historial">⬇️</button>
+        <button id="clearHistoryBtn" class="liquid-btn" style="background-color: #ae00003b" data-tooltip="Borrar historial">🗑️</button>
+        <input id="search" class="input-num" placeholder="Buscar por Nombre, Apellido, Correo o Numero" style="flex:1">
+      </div>
+
+      <div class="area">
+        <div class="card">
+          <h4>Opciones</h4>
+          <div class="option-row">
+            <label class="small">Ganadores:</label>
+            <input id="winnersCount" type="number" min="1" value="1" class="input-num" style="width:90px">
+          </div>
+          <div class="option-row">
+            <input id="excludeHistory" type="checkbox" checked>
+            <label for="excludeHistory" class="small">Excluir ganadores previos</label>
+          </div>
+          <div class="glass-hero">
+            <div class="liquid" style="font-size:30px; font-weight: unset;">🛈</div>
+            <div>
+              <div style="font-weight:700">Estado</div>
+              <div id="status" class="small">Sin archivo cargado</div>
+            </div>
+          </div>
+
+          <!-- 🔹 NUEVO PANEL DE HISTÓRICO -->
+          <div style="margin-top:12px;font-size:13px;color:rgba(234,242,255,0.7);font-weight:600">Histórico de sorteos</div>
+          <div id="historyPanel" class="history-panel">
+            <div class="history-empty">Aún no hay sorteos registrados</div>
+          </div>
+        </div>
+
+        <div class="card" style="background-color: #0000002e">
+          <h4>Participantes</h4>
+          <div id="tableContainer" class="table-wrap">
+            <div class="empty">Cargue un CSV para ver participantes</div>
+          </div>
+          <div class="footer">
+            <div id="countInfo">0 participantes</div>
+            <div>Dirección de Transformación Digital</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+let participants = [];
+let historySet = new Set();
+const STORAGE_KEY = 'sorteador_history_ids_v1';
+const HISTORY_FILE_KEY = 'sorteador_winners_log_v1';
+let drawCounter = 0;
+
+function loadHistory(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){ try{ const arr = JSON.parse(raw); arr.forEach(x=>historySet.add(String(x))); }catch(e){} }
+  const logRaw = localStorage.getItem(HISTORY_FILE_KEY) || '';
+  drawCounter = (logRaw.match(/Sorteo /g) || []).length;
+  renderHistory(logRaw);
+  updateStatus();
+}
+
+function renderHistory(logRaw){
+  const panel = document.getElementById('historyPanel');
+  if(!logRaw){
+    panel.innerHTML = '<div class="history-empty">Aún no hay sorteos registrados</div>';
+    return;
+  }
+  const blocks = logRaw.trim().split(/-+\n/).filter(Boolean);
+  panel.innerHTML = blocks.map(b=>{
+    const lines = b.trim().split('\n');
+    const title = lines.shift();
+    return `<div class="history-entry"><strong>${title}</strong><br>${lines.join('<br>')}</div>`;
+  }).join('');
+}
+
+function saveHistory(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(historySet))); }
+function updateStatus(){
+  document.getElementById('status').textContent = participants.length ? `${participants.length} participantes cargados` : 'Sin archivo cargado';
+  document.getElementById('countInfo').textContent = `${participants.length} participantes — ${historySet.size} ganadores previos`;
+}
+
+function parseCSVFile(file){
+  return new Promise((resolve,reject)=>{ Papa.parse(file,{header:true,skipEmptyLines:true,complete:(res)=>{resolve(res.data);},error:reject}); });
+}
+function normalizeRow(row){
+  const mapKey = k=>k?k.trim().toLowerCase():''; 
+  const normalized = {};
+  const keys = Object.keys(row);
+  const find = name => { const target = name.toLowerCase(); for(const k of keys){ if(mapKey(k)===target) return row[k]; } for(const k of keys){ if(mapKey(k).includes(target)) return row[k]; } return ''; };
+  normalized.Numero = String(find('Numero') || find('id')|| find('numero'));
+  normalized.Nombres = find('Nombres') || '';
+  normalized.Apellidos = find('Apellidos') || '';
+  normalized.Correo = find('Correo') || find('Email') || '';
+  normalized.Telefono = find('Telefono') || find('Phone') || '';
+  return normalized;
+}
+function censorPhone(phone){
+  if(!phone) return '';
+  const s = String(phone).trim();
+  if(!s) return '';
+  const maxKeep = 4;
+  const keep = Math.max(1, Math.min(maxKeep, Math.floor(s.length/2)));
+  return s.slice(0,keep) + '...';
+}
+function renderTable(filterText=''){
+  const container = document.getElementById('tableContainer');
+  if(!participants.length){ container.innerHTML = '<div class="empty">Cargue un CSV para ver participantes</div>'; updateStatus(); return; }
+  const ft = filterText.trim().toLowerCase();
+  const rows = participants.filter(p=>!ft || (p.Numero||'').toLowerCase().includes(ft) || (p.Nombres||'').toLowerCase().includes(ft) || (p.Apellidos||'').toLowerCase().includes(ft) || (p.Correo||'').toLowerCase().includes(ft));
+  const html = ['<table><thead><tr><th>Numero</th><th>Nombres</th><th>Apellidos</th><th>Correo</th><th>Telefono</th></tr></thead><tbody>'];
+  for(const r of rows){ const isPrev = historySet.has(String(r.Numero)); 
+    const censEmail = r.Correo;
+    const censPhone = censorPhone(r.Telefono);
+    html.push(`<tr style="${isPrev? 'opacity:0.5':''}"><td>${r.Numero}</td><td>${r.Nombres}</td><td>${r.Apellidos}</td><td>${censEmail}</td><td>${censPhone}</td></tr>`); 
+  }
+  html.push('</tbody></table>');
+  container.innerHTML = html.join('');
+  updateStatus();
+}
+function pickWinners(count, excludeHistory){
+  const pool = participants.filter(p=>p.Numero && (!excludeHistory || !historySet.has(String(p.Numero))));
+  if(count > pool.length) throw new Error(`No hay suficientes participantes disponibles`);
+  const arr = pool.slice();
+  for(let i=arr.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr.slice(0,count);
+}
+
+function showCountdown(){
+  return new Promise((resolve)=>{
+    let counter = 5;
+    const html = `
+      <div class="lc-countdown">
+        <div class="lc-label">Sorteando en...</div>
+        <div class="lc-circle" id="lcCircle" aria-hidden="true">
+          <div id="lcCounter" class="lc-number">5</div>
+          <div class="lc-orb" style="left:18%;top:20%;width:10px;height:10px;opacity:0.9"></div>
+          <div class="lc-orb" style="left:82%;top:28%;width:14px;height:14px;opacity:0.8"></div>
+          <div class="lc-orb" style="left:70%;top:72%;width:8px;height:8px;opacity:0.7"></div>
+        </div>
+      </div>
+    `;
+    Swal.fire({
+      title: '',
+      html,
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        const counterEl = document.getElementById('lcCounter');
+        const circle = document.getElementById('lcCircle');
+        counterEl.classList.add('lc-animate','lc-glow');
+        const t = setInterval(()=>{
+          counter--;
+          if(counter >= 1){
+            counterEl.classList.remove('lc-animate');
+            void counterEl.offsetWidth;
+            counterEl.textContent = String(counter);
+            counterEl.classList.add('lc-animate');
+            circle.classList.remove('lc-glow');
+            void circle.offsetWidth;
+            circle.classList.add('lc-glow');
+          }
+          if(counter < 1){
+            clearInterval(t);
+            circle.style.transition = 'transform 220ms ease';
+            circle.style.transform = 'scale(1.06)';
+            setTimeout(()=> {
+              circle.style.transform = 'scale(1)';
+              Swal.close();
+              resolve();
+            }, 220);
+          }
+        }, 1000);
+      },
+      customClass:{ popup:'swal2-ios-like' }
+    });
+  });
+}
+
+async function performDraw(){
+  const count = Math.max(1, parseInt(document.getElementById('winnersCount').value||1));
+  const excludeHistory = document.getElementById('excludeHistory').checked;
+  try{
+    const winners = pickWinners(count, excludeHistory);
+    await showCountdown();
+
+    winners.forEach(w=>historySet.add(String(w.Numero)));
+    saveHistory();
+    renderTable(document.getElementById('search').value);
+
+    confetti({particleCount: 120, spread: 140, origin: { y: 0.6 }});
+    const html = winners.map((w,i)=>`<div style="margin:8px 0">
+    <strong style="font-size:16px">#${i+1} ${w.Nombres} ${w.Apellidos}</strong>
+    <div style="font-size:13px;opacity:0.85">${w.Correo}</div>
+    </div>`).join('');
+
+    await Swal.fire({
+      title: '🎉 ¡Ganador(a)' + (winners.length>1? 'es':'') + '! 🎉',
+      html: `<div style="text-align:left">${html}</div>`,
+      showCloseButton: true,
+      confirmButtonText: 'Cerrar',
+      width: 700,
+      customClass: { popup: 'swal2-ios-like' }
+    });
+
+    drawCounter++;
+    const line = `Sorteo ${drawCounter}:\n` + winners.map(w=>
+      `🏆 ${w.Nombres} ${w.Apellidos}`
+    ).join('\n') + `\n--------------------------------------\n`;
+
+    let prevLog = localStorage.getItem(HISTORY_FILE_KEY) || '';
+    prevLog += line;
+    localStorage.setItem(HISTORY_FILE_KEY, prevLog);
+    renderHistory(prevLog);
+
+  }catch(e){ Swal.fire({icon:'error',title:'Error',text:e.message,customClass:{popup:'swal2-ios-like'}}); }
+}
+
+function downloadHistory(){
+  const log = localStorage.getItem(HISTORY_FILE_KEY) || '';
+  if(!log){ 
+    Swal.fire({ icon:'info', title:'Historial vacío', text:'Aún no hay sorteos registrados', customClass:{ popup:'swal2-ios-like' }}); 
+    return; 
+  }
+  const blob = new Blob([log], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = "winners.txt";
+  a.click();
+  URL.revokeObjectURL(a.href);
+
+  Swal.fire({ icon:'success', title:'Descarga lista', text:'El historial se descargó correctamente', customClass:{ popup:'swal2-ios-like' } });
+}
+
+function clearHistory(){
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(HISTORY_FILE_KEY);
+  historySet.clear();
+  drawCounter = 0;
+  updateStatus();
+  renderHistory('');
+  Swal.fire({ icon:'success', title:'Historial borrado', text:'El historial de ganadores ha sido eliminado', customClass:{ popup:'swal2-ios-like' } });
+  renderTable();
+}
+
+document.getElementById('csvfile').addEventListener('change', async (e)=>{ const f = e.target.files[0]; if(!f) return; const data = await parseCSVFile(f); participants = data.map(normalizeRow).filter(r=>r.Numero); renderTable(); Swal.fire({position:'top-end',icon:'success',title:`CSV cargado: ${participants.length} registros`,showConfirmButton:false,timer:1600,toast:true,customClass:{ popup:'swal2-ios-like' }}); });
+document.getElementById('drawBtn').addEventListener('click', performDraw);
+document.getElementById('search').addEventListener('input', (e)=> renderTable(e.target.value));
+document.getElementById('downloadHistoryBtn').addEventListener('click', downloadHistory);
+document.getElementById('clearHistoryBtn').addEventListener('click', clearHistory);
+
+loadHistory(); renderTable();
+</script>
+</body>
+</html>
