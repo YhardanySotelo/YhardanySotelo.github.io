@@ -315,7 +315,7 @@ async function performDraw(){
     </div>`).join('');
 
     await Swal.fire({
-      title: '🎉 ¡Ganador(a)' + (winners.length>1? 'es':'') + '! 🎉',
+      title: '🎉 ¡Ganador' + (winners.length>1? 'es':'') + '! 🎉',
       html: `<div style="text-align:left">${html}</div>`,
       showCloseButton: true,
       confirmButtonText: 'Cerrar',
@@ -373,3 +373,4 @@ loadHistory(); renderTable();
 </script>
 </body>
 </html>
+
