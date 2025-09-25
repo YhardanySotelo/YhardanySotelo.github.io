@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>iPod Classic - Portafolio Musical (Final)</title>
+<title>iPod Classic - Rueda funcional + scroll</title>
 <style>
   /* Reset */
   *{box-sizing:border-box;margin:0;padding:0}
@@ -29,7 +29,7 @@
     border-right:1px solid rgba(255,255,255,.02);
     overflow:hidden;
   }
-  /* ADJUSTED: when we "hide" left, keep a small 5% visible instead of 0 so the left is still hinted */
+  /* Keep small hint of left pane (5%) when a page is active */
   .leftPane.hidden{width:5%;opacity:.38;padding:8px 6px;min-width:54px}
   .leftOverlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.75));z-index:1}
   .artistAvatar{width:110px;height:110px;border-radius:10px;object-fit:cover;z-index:2;box-shadow:0 12px 30px rgba(0,0,0,.6)}
@@ -41,7 +41,6 @@
 
   /* rightPane */
   .rightPane{width:44%;padding:12px;display:flex;flex-direction:column;gap:8px;justify-content:flex-start;align-items:flex-start;overflow:auto;transition:width .36s cubic-bezier(.2,.9,.3,1)}
-  /* ADJUSTED: expand to 95% (instead of 100%) to preserve a 5% left hint */
   .rightPane.full{width:95%}
 
   /* Menu */
@@ -205,7 +204,7 @@
       </div>
     </div>
 
-    <!-- Wheel (buttons converted to real <button> elements) -->
+    <!-- Wheel (buttons are real <button> elements) -->
     <div class="controls" aria-hidden="false">
       <div class="wheel" id="wheel" role="group" aria-label="Rueda de control">
         <button class="btn-menu tiny" id="btn-menu" aria-pressed="false">MENU</button>
@@ -294,11 +293,26 @@ const photoClose = document.getElementById('photoClose');
 const photoPrev = document.getElementById('photoPrev');
 const photoNext = document.getElementById('photoNext');
 
+const wheel = document.getElementById('wheel');
+
 let currentMenuIndex = 0;
 let inPage = false;
 let currentPageId = null;
 let currentTrackIndex = 0;
 let currentPhotoIndex = 0;
+
+/* ========== Util helpers ========== */
+function isInsideButton(target){
+  return !!target.closest('button');
+}
+function scrollActivePage(steps, direction){
+  // direction: 1 => down, -1 => up
+  if(!inPage || !currentPageId) return;
+  const active = pages[currentPageId];
+  if(!active) return;
+  const amount = 80 * steps * direction;
+  active.scrollBy({top: amount, behavior: 'smooth'});
+}
 
 /* ========== Inicialización UI ========== */
 function initArtist(){
@@ -321,40 +335,30 @@ function renderMenu(){
   });
 }
 
-/* show/hide pages with smooth transition */
+/* show/hide pages (95%/5% behavior) */
 function showPage(id){
   const rightPane = document.getElementById('rightPane');
   if(!id){
-    // go back to menu / split view
     inPage = false;
     currentPageId = null;
-    // Reveal left pane smoothly (we use 'hidden' class to make left small 5%)
     leftPane.classList.remove('hidden');
     rightPane.classList.remove('full');
-    // hide page content
     Object.values(pages).forEach(p => { p.classList.remove('active'); p.setAttribute('aria-hidden','true'); });
     menuList.style.display = 'block';
-    // slight delay to ensure transitions feel natural
     setTimeout(()=> renderMenu(), 160);
     return;
   }
-  // open target page
   inPage = true;
   currentPageId = id;
   menuList.style.display = 'none';
-  // hide left pane visually with transition and expand right to 95%
   leftPane.classList.add('hidden');
   rightPane.classList.add('full');
-  // show page content
   Object.values(pages).forEach(p => { p.classList.remove('active'); p.setAttribute('aria-hidden','true'); });
   pages[id].classList.add('active');
   pages[id].setAttribute('aria-hidden','false');
-  // page-specific
   if(id === 'music'){ openMusic(); }
   if(id === 'photos'){ populateGallery(); }
 }
-
-/* activate menu index */
 function activateMenuIndex(i){
   currentMenuIndex = i;
   renderMenu();
@@ -380,9 +384,9 @@ function playTrack(i){
   if(i < 0 || i >= DATA.tracks.length) return;
   currentTrackIndex = i;
   const t = DATA.tracks[i];
-  // set src and try to play; handle play promise
   player.src = t.src;
-  player.play().catch(()=> { /* autoplay blocked — user must interact; still update UI */ });
+  // try play, but handle promise
+  player.play().catch(()=>{ /* blocked maybe */ });
   updateNowPlayingUI(t);
 }
 
@@ -392,11 +396,9 @@ function updateNowPlayingUI(t){
   playingArt.src = t.art || DATA.artist.avatar;
   nowTitle.textContent = t.title;
   nowArtist.textContent = DATA.artist.name;
-  // set left background subtly
   leftPane.style.backgroundImage = `url('${t.art || DATA.artist.cover}')`;
 }
 
-/* open music */
 function openMusic(){
   populateTracks();
   if(!player.src){
@@ -408,7 +410,7 @@ function openMusic(){
 }
 
 /* player events */
-player.addEventListener('loadedmetadata', ()=> { timeTotal.textContent = formatTime(player.duration || 0); });
+player.addEventListener('loadedmetadata', ()=> { if(timeTotal) timeTotal.textContent = formatTime(player.duration || 0); });
 player.addEventListener('timeupdate', ()=> {
   if(player.duration && !isNaN(player.duration)){
     const pct = Math.max(0, Math.min(100, (player.currentTime / player.duration) * 100));
@@ -422,171 +424,171 @@ player.addEventListener('ended', ()=> {
   const next = (currentTrackIndex + 1) % DATA.tracks.length;
   playTrack(next);
 });
+function formatTime(s){ if(!s || isNaN(s)) return '0:00'; const min = Math.floor(s/60); const sec = Math.floor(s%60).toString().padStart(2,'0'); return `${min}:${sec}`; }
 
-function formatTime(s){
-  if(!s || isNaN(s)) return '0:00';
-  const min = Math.floor(s/60);
-  const sec = Math.floor(s%60).toString().padStart(2,'0');
-  return `${min}:${sec}`;
-}
-
-/* ========== Gallery & Modal (inside ipod) ========== */
+/* ========== Gallery & Modal ========== */
 function populateGallery(){
   galleryGrid.innerHTML = '';
   DATA.gallery.forEach((url, idx)=>{
     const img = document.createElement('img');
-    img.src = url;
-    img.alt = 'Foto artista';
+    img.src = url; img.alt = 'Foto artista';
     img.tabIndex = 0;
     img.addEventListener('click', ()=> openPhoto(idx));
     img.addEventListener('keydown', (e)=>{ if(e.key==='Enter') openPhoto(idx); });
     galleryGrid.appendChild(img);
   });
 }
-
-/* modal open/close and thumbs */
 function openPhoto(index){
   if(index < 0 || index >= DATA.gallery.length) return;
   currentPhotoIndex = index;
   modalImg.src = DATA.gallery[index];
-  photoModal.classList.add('open');
-  photoModal.setAttribute('aria-hidden','false');
-  // build thumbs once
-  buildPhotoThumbs();
-  highlightActiveThumb();
+  photoModal.classList.add('open'); photoModal.setAttribute('aria-hidden','false');
+  buildPhotoThumbs(); highlightActiveThumb();
 }
-function closePhoto(){
-  photoModal.classList.remove('open');
-  photoModal.setAttribute('aria-hidden','true');
-  modalImg.src = '';
-}
-
-/* thumbs */
+function closePhoto(){ photoModal.classList.remove('open'); photoModal.setAttribute('aria-hidden','true'); modalImg.src=''; }
 function buildPhotoThumbs(){
   photoThumbs.innerHTML = '';
   DATA.gallery.forEach((u,i)=>{
-    const t = document.createElement('img');
-    t.src = u;
-    t.alt = 'Miniatura';
-    t.tabIndex = 0;
-    t.addEventListener('click', ()=> { openPhoto(i); });
-    t.addEventListener('keydown', (e)=>{ if(e.key==='Enter') openPhoto(i); });
-    if(i === currentPhotoIndex) t.classList.add('active');
+    const t = document.createElement('img'); t.src = u; t.alt='Miniatura'; t.tabIndex=0;
+    t.addEventListener('click', ()=> openPhoto(i)); t.addEventListener('keydown', (e)=>{ if(e.key==='Enter') openPhoto(i); });
+    if(i===currentPhotoIndex) t.classList.add('active');
     photoThumbs.appendChild(t);
   });
 }
-function highlightActiveThumb(){
-  const thumbs = photoThumbs.querySelectorAll('img');
-  thumbs.forEach((img,i)=> img.classList.toggle('active', i === currentPhotoIndex));
-}
+function highlightActiveThumb(){ const thumbs = photoThumbs.querySelectorAll('img'); thumbs.forEach((img,i)=> img.classList.toggle('active', i===currentPhotoIndex)); }
 
-/* photo nav */
-photoPrev.addEventListener('click', ()=> {
-  currentPhotoIndex = (currentPhotoIndex - 1 + DATA.gallery.length) % DATA.gallery.length;
-  modalImg.src = DATA.gallery[currentPhotoIndex];
-  highlightActiveThumb();
-});
-photoNext.addEventListener('click', ()=> {
-  currentPhotoIndex = (currentPhotoIndex + 1) % DATA.gallery.length;
-  modalImg.src = DATA.gallery[currentPhotoIndex];
-  highlightActiveThumb();
-});
+photoPrev.addEventListener('click', ()=> { currentPhotoIndex=(currentPhotoIndex-1+DATA.gallery.length)%DATA.gallery.length; modalImg.src = DATA.gallery[currentPhotoIndex]; highlightActiveThumb(); });
+photoNext.addEventListener('click', ()=> { currentPhotoIndex=(currentPhotoIndex+1)%DATA.gallery.length; modalImg.src = DATA.gallery[currentPhotoIndex]; highlightActiveThumb(); });
 photoClose.addEventListener('click', closePhoto);
 photoModal.addEventListener('click', (e)=> { if(e.target === photoModal) closePhoto(); });
 modalImg.addEventListener('click', (e)=> e.stopPropagation());
 
-/* ========== Wheel mechanics (rotation + steps) ========== */
-const wheel = document.getElementById('wheel');
+/* ========== Wheel rotation (scroll behavior) ========== */
 let tracking=false, lastAngle=null, accumulator=0;
-const THRESH=14;
+const THRESH = 18; // smaller threshold for more responsive scrolling
 
 function angleFromEvent(e){
   const rect = wheel.getBoundingClientRect();
   const cx = rect.left + rect.width/2;
   const cy = rect.top + rect.height/2;
-  const ev = e.touches && e.touches[0] ? e.touches[0] : e;
+  const ev = (e.touches && e.touches[0]) ? e.touches[0] : e;
   const x = ev.clientX - cx;
   const y = ev.clientY - cy;
   return Math.atan2(y, x) * 180 / Math.PI;
 }
+
 function step(delta){
   accumulator += delta;
   if(Math.abs(accumulator) >= THRESH){
     const steps = Math.floor(Math.abs(accumulator) / THRESH);
-    if(accumulator > 0){
-      currentMenuIndex = (currentMenuIndex + steps) % DATA.menu.length;
-    } else {
-      currentMenuIndex = (currentMenuIndex - steps + DATA.menu.length) % DATA.menu.length;
-    }
+    const dir = accumulator > 0 ? 1 : -1; // 1 => clockwise (down), -1 => ccw (up)
     accumulator = 0;
-    renderMenu();
-    if(navigator.vibrate) navigator.vibrate(8);
+
+    // Behavior per context
+    if(!inPage){
+      // menu navigation
+      currentMenuIndex = (currentMenuIndex + dir * steps + DATA.menu.length) % DATA.menu.length;
+      renderMenu();
+    } else {
+      // inside a page
+      if(currentPageId === 'photos' && photoModal.classList.contains('open')){
+        // change photo
+        currentPhotoIndex = (currentPhotoIndex + dir * steps + DATA.gallery.length) % DATA.gallery.length;
+        modalImg.src = DATA.gallery[currentPhotoIndex];
+        highlightActiveThumb();
+      } else {
+        // scroll the active page
+        scrollActivePage(steps, dir);
+      }
+    }
+
+    if(navigator.vibrate) navigator.vibrate(6);
   }
 }
 
-wheel.addEventListener('pointerdown', (e)=>{ tracking=true; lastAngle = angleFromEvent(e); wheel.setPointerCapture && wheel.setPointerCapture(e.pointerId); });
-wheel.addEventListener('pointermove', (e)=>{ if(!tracking) return; const a = angleFromEvent(e); let delta = a - lastAngle; if(delta > 180) delta -= 360; if(delta < -180) delta += 360; lastAngle = a; step(delta); });
-wheel.addEventListener('pointerup', (e)=>{ tracking=false; lastAngle=null; accumulator=0; try{ wheel.releasePointerCapture && wheel.releasePointerCapture(e.pointerId);}catch(e){} });
-
-wheel.addEventListener('touchstart', (e)=>{ tracking=true; lastAngle = angleFromEvent(e); });
-wheel.addEventListener('touchmove', (e)=>{ if(!tracking) return; const a = angleFromEvent(e); let delta = a - lastAngle; if(delta > 180) delta -= 360; if(delta < -180) delta += 360; lastAngle = a; step(delta); e.preventDefault(); }, {passive:false});
+/* Start tracking only when user is not pressing a button (so clicks still work) */
+wheel.addEventListener('pointerdown', (e)=>{
+  if(isInsideButton(e.target)) return; // ignore pointerdown if clicking a button (so button click works)
+  tracking = true;
+  lastAngle = angleFromEvent(e);
+  try{ wheel.setPointerCapture && wheel.setPointerCapture(e.pointerId); }catch(err){}
+});
+wheel.addEventListener('pointermove', (e)=>{
+  if(!tracking) return;
+  const a = angleFromEvent(e);
+  let delta = a - lastAngle;
+  if(delta > 180) delta -= 360;
+  if(delta < -180) delta += 360;
+  lastAngle = a;
+  step(delta);
+});
+wheel.addEventListener('pointerup', (e)=>{
+  tracking=false; lastAngle=null; accumulator=0;
+  try{ wheel.releasePointerCapture && wheel.releasePointerCapture(e.pointerId); }catch(err){}
+});
+/* Touch fallback */
+wheel.addEventListener('touchstart', (e)=>{
+  if(isInsideButton(e.target)) return;
+  tracking=true; lastAngle = angleFromEvent(e);
+}, {passive:false});
+wheel.addEventListener('touchmove', (e)=>{
+  if(!tracking) return;
+  const a = angleFromEvent(e);
+  let delta = a - lastAngle;
+  if(delta > 180) delta -= 360;
+  if(delta < -180) delta += 360;
+  lastAngle = a;
+  step(delta);
+  e.preventDefault();
+}, {passive:false});
 wheel.addEventListener('touchend', ()=>{ tracking=false; lastAngle=null; accumulator=0; });
 
-/* ========== Wheel buttons: robust handlers ========== */
-/* Use pointerup to ensure mobile + desktop reliably */
+/* ========== Wheel buttons (real buttons) ========== */
 function safePlayToggle(){
   if(!player.src) { playTrack(0); return; }
   if(player.paused) { player.play().catch(()=>{}); }
   else { player.pause(); }
 }
 
-/* Buttons (now real <button> elements) */
-document.getElementById('btn-select').addEventListener('click', ()=> {
+document.getElementById('btn-select').addEventListener('click', ()=>{
   if(!inPage){
     const id = DATA.menu[currentMenuIndex].id;
     showPage(id);
   } else {
-    // inside page behave
     if(currentPageId === 'music') safePlayToggle();
-    else if(currentPageId === 'photos') {
-      // open first photo if any
-      openPhoto(0);
-    }
+    else if(currentPageId === 'photos') openPhoto(0);
   }
 });
-document.getElementById('btn-menu').addEventListener('click', ()=> {
+document.getElementById('btn-menu').addEventListener('click', ()=>{
   if(inPage) showPage(null);
   else { currentMenuIndex = 0; renderMenu(); }
 });
-document.getElementById('btn-prev').addEventListener('click', ()=> {
+document.getElementById('btn-prev').addEventListener('click', ()=>{
   if(!inPage){
     currentMenuIndex = (currentMenuIndex - 1 + DATA.menu.length) % DATA.menu.length; renderMenu();
   } else if(currentPageId === 'music'){
     const prev = (currentTrackIndex - 1 + DATA.tracks.length) % DATA.tracks.length; playTrack(prev);
   } else if(currentPageId === 'photos'){
-    if(photoModal.classList.contains('open')){
-      photoPrev.click();
-    } else {
-      openPhoto(DATA.gallery.length - 1);
-    }
+    if(photoModal.classList.contains('open')) photoPrev.click(); else openPhoto(DATA.gallery.length - 1);
+  } else {
+    // scroll up small
+    if(currentPageId) pages[currentPageId].scrollBy({top:-80, behavior:'smooth'});
   }
 });
-document.getElementById('btn-next').addEventListener('click', ()=> {
+document.getElementById('btn-next').addEventListener('click', ()=>{
   if(!inPage){
     currentMenuIndex = (currentMenuIndex + 1) % DATA.menu.length; renderMenu();
   } else if(currentPageId === 'music'){
     const next = (currentTrackIndex + 1) % DATA.tracks.length; playTrack(next);
   } else if(currentPageId === 'photos'){
-    if(photoModal.classList.contains('open')){
-      photoNext.click();
-    } else {
-      openPhoto(0);
-    }
+    if(photoModal.classList.contains('open')) photoNext.click(); else openPhoto(0);
+  } else {
+    if(currentPageId) pages[currentPageId].scrollBy({top:80, behavior:'smooth'});
   }
 });
 document.getElementById('btn-play').addEventListener('click', ()=> safePlayToggle());
 
-/* ========== Keyboard support ========== */
+/* ========== Keyboard support & accessibility ========== */
 window.addEventListener('keydown', (e)=>{
   if(e.key === 'ArrowUp'){ currentMenuIndex = (currentMenuIndex - 1 + DATA.menu.length) % DATA.menu.length; renderMenu(); }
   if(e.key === 'ArrowDown'){ currentMenuIndex = (currentMenuIndex + 1) % DATA.menu.length; renderMenu(); }
@@ -606,10 +608,9 @@ function init(){
   initArtist();
   renderMenu();
   populateTracks();
-  // initial state
   nowTitle.textContent = DATA.tracks[0].title;
   nowArtist.textContent = DATA.artist.name;
-  bigBar.style.width = '0%';
+  if(bigBar) bigBar.style.width = '0%';
   currentTrackIndex = 0;
   player.src = DATA.tracks[0].src;
   player.pause();
