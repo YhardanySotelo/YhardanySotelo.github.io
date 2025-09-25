@@ -7,7 +7,7 @@
 <style>
   /* Reset */
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:#060607;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#fff;-webkit-font-smoothing:antialiased}
+  html,body{height:100%;background:#8d8d8d;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#fff;-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
 
   /* iPod container */
@@ -49,8 +49,10 @@
     display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:transform .12s,background .12s;outline:none}
   .menu li:focus{box-shadow:0 0 0 3px rgba(26,140,255,.12)}
   .menu li:hover{transform:translateX(4px)}
-  .menu li.selected{background:linear-gradient(180deg,#1a8cff,#5fb3ff);transform:translateX(6px);color:#012;font-weight:700}
+  .menu li.selected{background:linear-gradient(180deg, #7cd3ca, #333232);transform:translateX(6px);color:#012;font-weight:700}
   .menu li .subtitle{font-size:12px;color:rgba(255,255,255,.7)}
+
+
 
   /* Pages */
   .page{display:none;padding:6px;height:100%;overflow:auto}
@@ -69,7 +71,7 @@
   .nowPlaying .meta{width:90%;text-align:center}
   .nowPlaying .meta .song{font-weight:800;font-size:18px}
   .nowPlaying .meta .artist{font-size:13px;color:#cfdde6;margin-top:6px}
-  .timeRow{width:90%;display:flex;justify-content:space-between;font-size:12px;color:#bfcfd6;margin-top:6px}
+  .timeRow{width:90%;Display:flex;justify-content:space-between;font-size:12px;color:#bfcfd6;margin-top:6px}
 
   .tracks{width:100%;margin-top:8px}
   .track{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:rgba(255,255,255,.03);margin-bottom:8px;cursor:pointer}
@@ -97,6 +99,7 @@
   .wheel .btn-play{position:absolute;bottom:14%;left:50%;transform:translateX(-50%);font-size:14px;color:#d9d9d9;cursor:pointer}
   .wheel .tiny{font-size:12px;color:rgba(255,255,255,.75)}
 
+
   /* Photo modal inside the ipod screen (not fixed to viewport) */
   .photoModal{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);z-index:60;opacity:0;pointer-events:none;transition:opacity .28s ease}
   .photoModal.open{opacity:1;pointer-events:auto}
@@ -123,6 +126,25 @@
   }
   /* firefox scrollbar */
   .rightPane, .menu, .page { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.08) transparent; }
+  .no-transition * {
+    transition: none !important;
+   }
+
+   /* Asegura que la carátula tenga tamaño inicial aunque no haya cargado la imagen */
+    #playingArt {
+    width: 60%;
+    max-width: 320px;
+    aspect-ratio: 1 / 1;   /* cuadrado fijo */
+    background: rgba(255,255,255,.05); /* placeholder gris */
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+    }
+
+    /* Previene que el bloque se colapse antes de que la imagen cargue */
+    #nowPlaying {
+    min-height: 280px;
+    }
 
  
 </style>
@@ -153,9 +175,9 @@
 
           <div id="page-bio" class="page" role="document" aria-hidden="true">
             <h3>Biografía</h3>
-            <img src="https://picsum.photos/720/480?random=21" alt="Foto artista" class="avatar" style="width:100%;height:160px;object-fit:cover;border-radius:10px;margin-bottom:10px">
+            <img src="img/main.webp" alt="Foto artista" class="avatar" style="width:100%;height:160px;object-fit:cover;border-radius:10px;margin-bottom:10px">
             <div class="bio">
-              <p><strong>Nombre Artístico</strong> — Músico, compositor y productor con más de X años de trayectoria. Explora sonidos electrónicos y paisajes sonoros experimentales. Ha tocado en festivales internacionales.</p>
+              <p><strong>Sebastián Yepes</strong> — Sebastián Yepes Alzate músico colombiano, nacido en la ciudad de Manizales Departamento de Caldas en el eje cafetero Colombiano, el 10 de junio de 1980. Ex-vocalista de la agrupación Sanalejo una de las bandas más importantes de Colombia que logro a lo largo de su carrera una gran cantidad de reconocimientos y premios llevando su música a varios países de Latinoamérica y Estados Unidos.</p>
             </div>
           </div>
 
@@ -220,9 +242,9 @@
 /* ========== Datos ========== */
 const DATA = {
   artist: {
-    name: 'Nombre Artístico',
+    name: 'Sebastián Yepes',
     cover: 'https://picsum.photos/900/900?random=15',
-    avatar: 'https://picsum.photos/600/600?random=13'
+    avatar: 'img/artist.webp'
   },
   menu:[
     { id:'bio', label:'Biografía', subtitle:'Sobre el artista' },
@@ -231,7 +253,7 @@ const DATA = {
     { id:'social', label:'Redes', subtitle:'Instagram / Facebook' }
   ],
   tracks:[
-    { title:'Track One', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', length:'3:22', art:'https://picsum.photos/600/600?random=13' },
+    { title:'No me veré caer', src:'assets/track1.mp3', length:'3:22', art:'img/track1.webp' },
     { title:'Track Two', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', length:'4:02', art:'https://picsum.photos/600/600?random=14' },
     { title:'Ambient Demo', src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3', length:'2:48', art:'https://picsum.photos/600/600?random=16' }
   ],
@@ -290,6 +312,16 @@ let currentPageId = null;
 let currentTrackIndex = 0;
 let currentPhotoIndex = 0;
 
+/* ========== MediaSource (MSE) globals ========== */
+let currentMSE = {
+  mediaSource: null,
+  sourceBuffer: null,
+  objectUrl: null,
+  fetchController: null,
+  queue: [],
+  isUsingMSE: false
+};
+
 /* ========== Util helpers ========== */
 function isInsideButton(target){
   return !!target.closest('button');
@@ -327,27 +359,66 @@ function renderMenu(){
 /* show/hide pages (95%/5% behavior) */
 function showPage(id){
   const rightPane = document.getElementById('rightPane');
+
   if(!id){
     inPage = false;
     currentPageId = null;
     leftPane.classList.remove('hidden');
     rightPane.classList.remove('full');
-    Object.values(pages).forEach(p => { p.classList.remove('active'); p.setAttribute('aria-hidden','true'); });
+    Object.values(pages).forEach(p => { 
+      p.classList.remove('active'); 
+      p.setAttribute('aria-hidden','true'); 
+    });
     menuList.style.display = 'block';
     setTimeout(()=> renderMenu(), 160);
     return;
   }
+
   inPage = true;
   currentPageId = id;
+
+  // 🔧 Forzar sin transición
+  document.body.classList.add("no-transition");
+
+  // ocultar menú, expandir/ocultar panes
   menuList.style.display = 'none';
   leftPane.classList.add('hidden');
   rightPane.classList.add('full');
-  Object.values(pages).forEach(p => { p.classList.remove('active'); p.setAttribute('aria-hidden','true'); });
+
+  // Forzar medidas explícitas antes del paint
+  rightPane.style.width = "95%";
+  leftPane.style.width = "5%";
+
+  // Reflow inmediato
+  rightPane.offsetHeight;
+
+  // quitar el hack después de un frame
+  requestAnimationFrame(()=>{
+    document.body.classList.remove("no-transition");
+    rightPane.style.width = ""; // dejar que use la clase full normalmente
+    leftPane.style.width = "";  // igual
+  });
+
+  Object.values(pages).forEach(p => { 
+    p.classList.remove('active'); 
+    p.setAttribute('aria-hidden','true'); 
+  });
   pages[id].classList.add('active');
   pages[id].setAttribute('aria-hidden','false');
-  if(id === 'music'){ openMusic(); }
-  if(id === 'photos'){ populateGallery(); }
+
+  requestAnimationFrame(()=> {
+    pages[id].scrollTop = 0;
+    if(id === 'music'){ 
+        openMusic();
+        requestAnimationFrame(() => {
+            document.getElementById('rightPane').style.transform = 'translateZ(0)';
+        });
+    }
+    if(id === 'photos'){ populateGallery(); }
+  });
 }
+
+
 function activateMenuIndex(i){
   currentMenuIndex = i;
   renderMenu();
@@ -371,31 +442,246 @@ function populateTracks(){
 
 function playTrack(i){
   if(i < 0 || i >= DATA.tracks.length) return;
+  // if same track and paused, just resume
+  if(i === currentTrackIndex && player.src && player.paused){
+    player.play().catch(()=>{});
+    return;
+  }
+
+  // abort any ongoing MSE/fetch for previous track
+  cleanupCurrentMSE();
+
   currentTrackIndex = i;
   const t = DATA.tracks[i];
-  player.src = t.src;
-  // try play, but handle promise
-  player.play().catch(()=>{ /* blocked maybe */ });
+
+  // Try to use MediaSource (chunked) for progressive buffering
+  loadTrackWithMSE(t.src).then((usedMSE) => {
+    // if MSE was used, the player.src will already be set and playing handled inside loader
+    if(!usedMSE){
+      // fallback normal loading
+      player.src = t.src;
+      player.preload = 'auto';
+      player.play().catch(()=>{ /* maybe blocked */ });
+    }
+  }).catch((err)=>{
+    console.warn('MSE failed, fallback to normal audio. Err:', err);
+    player.src = t.src;
+    player.preload = 'auto';
+    player.play().catch(()=>{});
+  });
+
   updateNowPlayingUI(t);
 }
 
 function updateNowPlayingUI(t){
   playingTitle.textContent = t.title;
   playingArtist.textContent = DATA.artist.name;
-  playingArt.src = t.art || DATA.artist.avatar;
+
+  playingArt.src = t.art || DATA.artist.avatar || "img/placeholder.png";
+
   nowTitle.textContent = t.title;
   nowArtist.textContent = DATA.artist.name;
   leftPane.style.backgroundImage = `url('${t.art || DATA.artist.cover}')`;
 }
 
+
 function openMusic(){
   populateTracks();
+
+  // ⚡ Asegurar que siempre haya una carátula visible la primera vez
   if(!player.src){
-    player.src = DATA.tracks[0].src;
     currentTrackIndex = 0;
-    updateNowPlayingUI(DATA.tracks[0]);
+    const first = DATA.tracks[0];
+
+    player.src = first.src;
+    player.preload = "metadata";
     player.pause();
+
+    // Setear carátula inicial (aunque no se haya reproducido aún)
+    playingArt.src = first.art || DATA.artist.avatar;
+    playingTitle.textContent = first.title;
+    playingArtist.textContent = DATA.artist.name;
+
+    nowTitle.textContent = first.title;
+    nowArtist.textContent = DATA.artist.name;
+    leftPane.style.backgroundImage = `url('${first.art || DATA.artist.cover}')`;
   }
+}
+
+
+/* ========== MediaSource (MSE) implementation ========== */
+/*
+  - Attempts to stream using MediaSource + Range requests (chunks).
+  - If server doesn't accept Range or MSE unsupported -> fallback to normal audio.src
+  - Manages aborts if user changes track quickly.
+*/
+async function loadTrackWithMSE(url){
+  // guard: if no MediaSource support, fallback
+  if(!('MediaSource' in window)) return false;
+
+  try{
+    // probe server with HEAD to see if supports range and get content-length
+    const headResp = await fetch(url, { method: 'HEAD' });
+    const acceptRanges = headResp.headers.get('accept-ranges') || '';
+    const contentLengthHeader = headResp.headers.get('content-length');
+    const contentLength = contentLengthHeader ? parseInt(contentLengthHeader, 10) : NaN;
+    const supportsRange = acceptRanges.toLowerCase().includes('bytes');
+
+    // only use chunked approach when server supports Range and we know size (not strictly required,
+    // but it's more robust)
+    if(!supportsRange || isNaN(contentLength)){
+      // fallback
+      return false;
+    }
+
+    // prepare MediaSource
+    const mime = 'audio/mpeg'; // common for mp3; adjust if you know different codec
+    const mediaSource = new MediaSource();
+    currentMSE.mediaSource = mediaSource;
+    currentMSE.queue = [];
+    currentMSE.fetchController = new AbortController();
+    currentMSE.isUsingMSE = true;
+
+    // attach object URL
+    const objectUrl = URL.createObjectURL(mediaSource);
+    currentMSE.objectUrl = objectUrl;
+    player.src = objectUrl;
+
+    // once source open, create SourceBuffer
+    await new Promise((resolve, reject) => {
+      const onSourceOpen = () => {
+        try{
+          // MIME may vary; try 'audio/mpeg' first
+          const sb = mediaSource.addSourceBuffer(mime);
+          currentMSE.sourceBuffer = sb;
+          resolve();
+        }catch(err){
+          // unable to create sourceBuffer for mime -> reject
+          reject(err);
+        } finally {
+          mediaSource.removeEventListener('sourceopen', onSourceOpen);
+        }
+      };
+      mediaSource.addEventListener('sourceopen', onSourceOpen);
+      // safety timeout in case sourceopen never fires
+      setTimeout(()=> {
+        if(mediaSource.readyState !== 'open') {
+          reject(new Error('MediaSource open timeout'));
+        }
+      }, 5000);
+    });
+
+    // now fetch in ranges and append
+    const chunkSize = 64 * 1024; // 64KB chunks (tuneable)
+    let start = 0;
+    const total = contentLength;
+    const sb = currentMSE.sourceBuffer;
+
+    // append queue helper (ensures we don't append while updating)
+    function appendBufferChunk(ab){
+      if(!sb) return;
+      if(sb.updating){
+        currentMSE.queue.push(ab);
+      } else {
+        try{
+          sb.appendBuffer(ab);
+        }catch(err){
+          console.error('appendBuffer error', err);
+          // if error, try to clear queue to avoid blocking
+        }
+      }
+    }
+    // when update ends, flush queue
+    sb.addEventListener('updateend', ()=>{
+      if(currentMSE.queue.length){
+        const next = currentMSE.queue.shift();
+        try{ sb.appendBuffer(next); } catch(e){ console.error(e); }
+      } else {
+        // if mediaSource is open and full buffer appended, we can optionally set duration
+        // mediaSource.duration = Math.max(mediaSource.duration || 0, player.duration || 0);
+      }
+    });
+
+    // orchestrate fetch loop
+    const controller = currentMSE.fetchController;
+    const signal = controller.signal;
+
+    // start playback as soon as we appended first chunk and there's enough data
+    let appendedFirstChunk = false;
+
+    while(start < total){
+      // if aborted, throw to break
+      if(signal.aborted) throw new Error('aborted');
+
+      const end = Math.min(start + chunkSize - 1, total - 1);
+      const rangeHeader = `bytes=${start}-${end}`;
+      const resp = await fetch(url, { headers: { Range: rangeHeader }, signal });
+      if(!resp.ok && resp.status !== 206){
+        // server didn't honor the range request
+        throw new Error('Range request failed with status ' + resp.status);
+      }
+      const arrayBuffer = await resp.arrayBuffer();
+      appendBufferChunk(arrayBuffer);
+
+      // once we appended first chunk, try to play
+      if(!appendedFirstChunk){
+        appendedFirstChunk = true;
+        // attempt play (may be blocked by browser autoplay policies)
+        player.play().catch(()=>{ /* ignore */ });
+      }
+
+      start += chunkSize;
+    }
+
+    // all chunks fetched -> signal endOfStream when buffer drained
+    // wait until sourceBuffer finishes updating and then call endOfStream
+    const waitForAllAppended = () => new Promise((resolve) => {
+      const check = () => {
+        if(!sb.updating && currentMSE.queue.length === 0) resolve();
+        else setTimeout(check, 50);
+      };
+      check();
+    });
+    await waitForAllAppended();
+
+    // set duration if available
+    try{
+      if(currentMSE.mediaSource && currentMSE.mediaSource.readyState === 'open'){
+        currentMSE.mediaSource.endOfStream();
+      }
+    }catch(e){ /* ignore */ }
+
+    return true;
+  }catch(err){
+    // on any error, cleanup MSE and propagate false so caller falls back
+    cleanupCurrentMSE();
+    console.warn('MSE pipeline error', err);
+    return false;
+  }
+}
+
+function cleanupCurrentMSE(){
+  try{
+    if(currentMSE.fetchController){
+      currentMSE.fetchController.abort();
+    }
+  }catch(e){}
+  try{
+    if(currentMSE.sourceBuffer && currentMSE.mediaSource && currentMSE.mediaSource.readyState === 'open'){
+      // can't always remove; some browsers restrict removal while updating
+      // guard with try/catch
+      try{ currentMSE.mediaSource.removeSourceBuffer(currentMSE.sourceBuffer); } catch(e){}
+    }
+  }catch(e){}
+  try{
+    if(currentMSE.objectUrl){
+      URL.revokeObjectURL(currentMSE.objectUrl);
+    }
+  }catch(e){}
+  // reset state
+  currentMSE = { mediaSource: null, sourceBuffer: null, objectUrl: null, fetchController: null, queue: [], isUsingMSE: false };
+  // ensure player uses a "normal" src after cleanup (avoid stale objectURL)
+  // we do not overwrite player.src here to allow caller to set fallback src
 }
 
 /* player events */
@@ -597,17 +883,26 @@ function init(){
   initArtist();
   renderMenu();
   populateTracks();
-  nowTitle.textContent = DATA.tracks[0].title;
-  nowArtist.textContent = DATA.artist.name;
-  if(bigBar) bigBar.style.width = '0%';
+
   currentTrackIndex = 0;
-  player.src = DATA.tracks[0].src;
+  const first = DATA.tracks[0];
+
+  // ⚡ Configurar el primer track desde el inicio
+  player.src = first.src;
+  player.preload = "metadata";
   player.pause();
+
+  // Mostrar carátula y textos desde el arranque
+  updateNowPlayingUI(first);
+
+  if(bigBar) bigBar.style.width = "0%";
 }
+
 init();
 
 /* prevent dragging images on desktop */
 document.addEventListener('dragstart', (e)=>{ if(e.target.tagName === 'IMG') e.preventDefault(); });
+
 </script>
 </body>
 </html>
