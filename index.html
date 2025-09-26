@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>iPod Classic - Rueda funcional + scroll</title>
+<title>iPod Classic - Rueda funcional + scroll + Juegos</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;background:#8d8d8d;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#fff;-webkit-font-smoothing:antialiased}
@@ -27,7 +27,7 @@
   .signal span.active{background:#cfdde6;opacity:1}
   .battery{position:relative;width:24px;height:12px;border:1px solid #cfdde6;border-radius:2px;overflow:hidden}
   .battery::after{content:"";position:absolute;top:3px;right:-3px;width:2px;height:6px;background:#cfdde6;border-radius:1px}
-  .battery-level {height:100%;width:100%; /* empieza llena */background:#4caf50; /* verde */border-radius:1px;transition:width 1s ease, background 1s ease;}
+  .battery-level {height:100%;width:100%;background:#4caf50;border-radius:1px;transition:width 1s ease, background 1s ease;}
   .battery.charging .battery-level{animation:batt-pulse 1s infinite}
   @keyframes batt-pulse{0%{opacity:.85}50%{opacity:1}100%{opacity:.85}}
   .content{position:relative;height:calc(100% - 42px);display:flex;background:linear-gradient(180deg,#061220 0%, #0b1720 100%)}
@@ -66,7 +66,7 @@
   .nowPlaying .meta .song{font-weight:800;font-size:18px}
   .nowPlaying .meta .artist{font-size:13px;color:#cfdde6;margin-top:6px}
   .timeRow{width:90%;Display:flex;justify-content:space-between;font-size:12px;color:#bfcfd6;margin-top:6px}
-  .timeRowSmall {width: 92%;display: flex;justify-content: space-between;font-size: 11px;color: #bfcfd6;margin: 6px 0 4px 0; /* más espacio arriba y abajo */ z-index: 2;}
+  .timeRowSmall {width: 92%;display: flex;justify-content: space-between;font-size: 11px;color: #bfcfd6;margin: 6px 0 4px 0; z-index: 2;}
   .tracks{width:100%;margin-top:8px}
   .track{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:rgba(255,255,255,.03);margin-bottom:8px;cursor:pointer}
   .track:hover{background:rgba(255,255,255,.05)}
@@ -114,14 +114,14 @@
     background: transparent;
   }
   .rightPane, .menu, .page { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.08) transparent; }
-  .no-transition * {
-    transition: none !important;
-  }
+  .no-transition * { transition: none !important; }
   #playingArt {width: 60%;max-width: 320px;aspect-ratio: 1 / 1;background: rgba(255,255,255,.05);object-fit: cover;border-radius: 12px; display: block;}
-
   #nowPlaying { min-height: 280px;}
-
- 
+  /* estilos para la página de juegos */
+  .game-canvas { width: 100%; height: 100%; background: linear-gradient(180deg,#031022,#051430); border-radius:10px; display:block; }
+  .game-hud { display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#cfe8ff;padding:6px 4px }
+  .game-controls { display:flex;gap:6px;align-items:center }
+  .smallBtn { padding:6px 8px;border-radius:6px;background:rgba(255,255,255,.03);border:none;color:#fff }
 </style>
 </head>
 <body>
@@ -129,7 +129,6 @@
     <div class="screen" id="screen">
       <div class="header">
         <div class="title" id="headerTitle">9:41 AM • Music</div>
-        <!-- Reemplazado texto fijo por iconos reales de señal y batería (manteniendo contenido y estilo) -->
         <div class="icons">
           <div class="signal" id="signalIcon"><span class="bar1"></span><span class="bar2"></span><span class="bar3"></span><span class="bar4"></span></div>
           <div class="battery" id="batteryWrap"><div class="battery-level" id="batteryLevel"></div></div>
@@ -151,7 +150,6 @@
             <div class="bigProgress">
               <div class="bar" id="bigBar" style="width:0%"></div>
             </div>
-            <!-- --------------------------------------------------------------- -->
           </div>
         </div>
 
@@ -163,7 +161,7 @@
             <h3>Biografía</h3>
             <img src="img/main.webp" alt="Foto artista" class="avatar" style="width:100%;height:160px;object-fit:cover;border-radius:10px;margin-bottom:10px">
             <div class="bio">
-              <p><strong>Sebastián Yepes</strong> — Sebastián Yepes Alzate músico colombiano, nacido en la ciudad de Manizales Departamento de Caldas en el eje cafetero Colombiano, el 10 de junio de 1980. Ex-vocalista de la agrupación Sanalejo una de las bandas más importantes de Colombia que logro a lo largo de su carrera una gran cantidad de reconocimientos y premios llevando su música a varios países de Latinoamérica y Estados Unidos.</p>
+              <p><strong>Sebastián Yepes</strong> — Sebastián Yepes Alzate músico colombiano, nacido en la ciudad de Manizales Departamento de Caldas en el eje cafetero Colombiano, el 10 de junio de 1980. Ex-vocalista de la agrupación Sanalejo.</p>
             </div>
           </div>
 
@@ -197,11 +195,26 @@
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">📘 Facebook</a>
             </div>
           </div>
+
+          <!-- Página nueva: Juegos -->
+          <div id="page-games" class="page" role="document" aria-hidden="true">
+            <div class="game-hud">
+              <div>JUEGOS</div>
+              <div class="game-controls">
+                <button id="gameRestart" class="smallBtn">Reiniciar</button>
+                <button id="gamePause" class="smallBtn">Pausa</button>
+              </div>
+            </div>
+            <canvas id="gameCanvas" class="game-canvas" width="320" height="240" aria-label="Canvas de juego"></canvas>
+            <div style="height:8px"></div>
+            <div style="font-size:12px;color:#cfe8ff;padding:4px">Usa la rueda para mover la paleta. Pulsa OK para iniciar/pausar.</div>
+          </div>
+
         </div>
       </div>
     </div>
 
-    <!-- Wheel (buttons are real <button> elements) -->
+    <!-- Wheel -->
     <div class="controls" aria-hidden="false">
       <div class="wheel" id="wheel" role="group" aria-label="Rueda de control">
         <button class="btn-menu tiny" id="btn-menu" aria-pressed="false">MENU</button>
@@ -212,8 +225,7 @@
       </div>
     </div>
 
-
-  <!-- Photo modal INSIDE ipod screen -->
+  <!-- Photo modal -->
   <div class="photoModal" id="photoModal" aria-hidden="true" role="dialog" aria-label="Foto ampliada">
     <div class="photoFrame" role="document">
       <button class="closeBtn" id="photoClose" aria-label="Cerrar foto">✕</button>
@@ -225,7 +237,7 @@
   </div>
 
 <script>
-/* ========== Datos ========== */
+/* ===== Datos ===== */
 const DATA = {
   artist: {
     name: 'Sebastián Yepes',
@@ -236,7 +248,8 @@ const DATA = {
     { id:'bio', label:'Biografía', subtitle:'Sobre el artista' },
     { id:'music', label:'Música', subtitle:'Pistas & demos' },
     { id:'photos', label:'Fotos', subtitle:'Galería visual' },
-    { id:'social', label:'Redes', subtitle:'Instagram / Facebook' }
+    { id:'social', label:'Redes', subtitle:'Instagram / Facebook' },
+    { id:'games', label:'Juegos', subtitle:'Pong rápido (rueda)' } // nuevo elemento
   ],
   tracks:[
     { title:'No me veré caer', src:'assets/track1.mp3', length:'3:22', art:'img/track1.webp' },
@@ -251,7 +264,7 @@ const DATA = {
   ]
 };
 
-/* ========== DOM refs ========== */
+/* ===== Referencias DOM ===== */
 const leftPane = document.getElementById('leftPane');
 const artistAvatar = document.getElementById('artistAvatar');
 const nowTitle = document.getElementById('nowTitle');
@@ -266,7 +279,8 @@ const pages = {
   bio: document.getElementById('page-bio'),
   music: document.getElementById('page-music'),
   photos: document.getElementById('page-photos'),
-  social: document.getElementById('page-social')
+  social: document.getElementById('page-social'),
+  games: document.getElementById('page-games') // nueva página
 };
 
 const tracksList = document.getElementById('tracksList');
@@ -295,42 +309,30 @@ const photoNext = document.getElementById('photoNext');
 
 const wheel = document.getElementById('wheel');
 
+/* ===== Estado global ===== */
 let currentMenuIndex = 0;
 let inPage = false;
 let currentPageId = null;
 let currentTrackIndex = 0;
 let currentPhotoIndex = 0;
 
-/* ========== MediaSource (MSE) globals ========== */
-let currentMSE = {
-  mediaSource: null,
-  sourceBuffer: null,
-  objectUrl: null,
-  fetchController: null,
-  queue: [],
-  isUsingMSE: false
-};
+/* ===== MSE globals (sin cambios) ===== */
+let currentMSE = { mediaSource: null, sourceBuffer: null, objectUrl: null, fetchController: null, queue: [], isUsingMSE: false };
 
-/* ========== Util helpers ========== */
-function isInsideButton(target){
-  return !!target.closest('button');
-}
+/* ===== Util helpers ===== */
+function isInsideButton(target){ return !!target.closest('button'); }
 function scrollActivePage(steps, direction){
-  // direction: 1 => down, -1 => up
   if(!inPage || !currentPageId) return;
   const active = pages[currentPageId];
   if(!active) return;
   const amount = 80 * steps * direction;
-
-  // clamp final scrollTop to avoid overscroll bounce
   const maxScroll = active.scrollHeight - active.clientHeight;
   const desired = active.scrollTop + amount;
   const clamped = Math.max(0, Math.min(maxScroll, desired));
-  // use smooth if available
   active.scrollTo({top: clamped, behavior: 'smooth'});
 }
 
-/* ========== Inicialización UI ========== */
+/* ===== Inicialización UI ===== */
 function initArtist(){
   leftPane.style.backgroundImage = `url('${DATA.artist.cover}')`;
   artistAvatar.src = DATA.artist.avatar;
@@ -343,7 +345,10 @@ function renderMenu(){
     li.tabIndex = 0;
     li.dataset.id = m.id;
     li.setAttribute('role','menuitem');
-    li.className = i===currentMenuIndex ? 'selected' : '';
+    if(i===currentMenuIndex){
+      li.className = 'selected';
+      setTimeout(()=> li.scrollIntoView({block:'nearest', behavior:'smooth'}), 0);
+    }
     li.innerHTML = `<div><div style="font-size:14px">${m.label}</div><div class="subtitle">${m.subtitle}</div></div><div>›</div>`;
     li.addEventListener('click', ()=> { activateMenuIndex(i); });
     li.addEventListener('keydown', (e)=>{ if(e.key==='Enter') activateMenuIndex(i); });
@@ -351,7 +356,8 @@ function renderMenu(){
   });
 }
 
-/* show/hide pages (95%/5% behavior) */
+
+/* muestra/oculta páginas */
 function showPage(id){
   const rightPane = document.getElementById('rightPane');
 
@@ -366,32 +372,28 @@ function showPage(id){
     });
     menuList.style.display = 'block';
     setTimeout(()=> renderMenu(), 160);
+    // si veníamos de juegos, detener juego
+    if(window.Game && window.Game.running) window.Game.stop();
     return;
   }
 
   inPage = true;
   currentPageId = id;
 
-  // 🔧 Forzar sin transición
   document.body.classList.add("no-transition");
 
-  // ocultar menú, expandir/ocultar panes
   menuList.style.display = 'none';
   leftPane.classList.add('hidden');
   rightPane.classList.add('full');
 
-  // Forzar medidas explícitas antes del paint
   rightPane.style.width = "95%";
   leftPane.style.width = "5%";
-
-  // Reflow inmediato
   rightPane.offsetHeight;
 
-  // quitar el hack después de un frame
   requestAnimationFrame(()=>{
     document.body.classList.remove("no-transition");
-    rightPane.style.width = ""; // dejar que use la clase full normalmente
-    leftPane.style.width = "";  // igual
+    rightPane.style.width = "";
+    leftPane.style.width = "";
   });
 
   Object.values(pages).forEach(p => { 
@@ -403,16 +405,13 @@ function showPage(id){
 
   requestAnimationFrame(()=> {
     pages[id].scrollTop = 0;
-    if(id === 'music'){ 
-        openMusic();
-        requestAnimationFrame(() => {
-            document.getElementById('rightPane').style.transform = 'translateZ(0)';
-        });
-    }
+    if(id === 'music'){ openMusic(); }
     if(id === 'photos'){ populateGallery(); }
+    if(id === 'games'){ // iniciar juego cuando se entre a la página
+      if(window.Game) window.Game.start();
+    }
   });
 }
-
 
 function activateMenuIndex(i){
   currentMenuIndex = i;
@@ -420,7 +419,7 @@ function activateMenuIndex(i){
   showPage(DATA.menu[i].id);
 }
 
-/* ========== Tracks & Now Playing ========== */
+/* ===== Tracks & Now Playing ===== */
 function populateTracks(){
   tracksList.innerHTML = '';
   DATA.tracks.forEach((t,i) => {
@@ -437,199 +436,118 @@ function populateTracks(){
 
 function playTrack(i){
   if(i < 0 || i >= DATA.tracks.length) return;
-  // if same track and paused, just resume
   if(i === currentTrackIndex && player.src && player.paused){
     player.play().catch(()=>{});
     return;
   }
-
-  // abort any ongoing MSE/fetch for previous track
   cleanupCurrentMSE();
-
   currentTrackIndex = i;
   const t = DATA.tracks[i];
-
-  // Try to use MediaSource (chunked) for progressive buffering
   loadTrackWithMSE(t.src).then((usedMSE) => {
-    // if MSE was used, the player.src will already be set and playing handled inside loader
     if(!usedMSE){
-      // fallback normal loading
       player.src = t.src;
       player.preload = 'auto';
-      player.play().catch(()=>{ /* maybe blocked */ });
+      player.play().catch(()=>{});
     }
   }).catch((err)=>{
-    console.warn('MSE failed, fallback to normal audio. Err:', err);
     player.src = t.src;
     player.preload = 'auto';
     player.play().catch(()=>{});
   });
-
   updateNowPlayingUI(t);
 }
 
 function updateNowPlayingUI(t){
   playingTitle.textContent = t.title;
   playingArtist.textContent = DATA.artist.name;
-
   playingArt.src = t.art || DATA.artist.avatar || "img/placeholder.png";
-
   nowTitle.textContent = t.title;
   nowArtist.textContent = DATA.artist.name;
   leftPane.style.backgroundImage = `url('${t.art || DATA.artist.cover}')`;
 }
 
-
 function openMusic(){
   populateTracks();
-
-  // ⚡ Asegurar que siempre haya una carátula visible la primera vez
   if(!player.src){
     currentTrackIndex = 0;
     const first = DATA.tracks[0];
-
     player.src = first.src;
     player.preload = "metadata";
     player.pause();
-
-    // Setear carátula inicial (aunque no se haya reproducido aún)
     playingArt.src = first.art || DATA.artist.avatar;
     playingTitle.textContent = first.title;
     playingArtist.textContent = DATA.artist.name;
-
     nowTitle.textContent = first.title;
     nowArtist.textContent = DATA.artist.name;
     leftPane.style.backgroundImage = `url('${first.art || DATA.artist.cover}')`;
   }
 }
 
-
-/* ========== MediaSource (MSE) implementation ========== */
-/*
-  - Attempts to stream using MediaSource + Range requests (chunks).
-  - If server doesn't accept Range or MSE unsupported -> fallback to normal audio.src
-  - Manages aborts if user changes track quickly.
-*/
+/* ========== MSE (sin cambios funcionales importantes) ========== */
 async function loadTrackWithMSE(url){
-  // guard: if no MediaSource support, fallback
   if(!('MediaSource' in window)) return false;
-
   try{
-    // probe server with HEAD to see if supports range and get content-length
     const headResp = await fetch(url, { method: 'HEAD' });
     const acceptRanges = headResp.headers.get('accept-ranges') || '';
     const contentLengthHeader = headResp.headers.get('content-length');
     const contentLength = contentLengthHeader ? parseInt(contentLengthHeader, 10) : NaN;
     const supportsRange = acceptRanges.toLowerCase().includes('bytes');
-
-    // only use chunked approach when server supports Range and we know size (not strictly required,
-    // but it's more robust)
-    if(!supportsRange || isNaN(contentLength)){
-      // fallback
-      return false;
-    }
-
-    // prepare MediaSource
-    const mime = 'audio/mpeg'; // common for mp3; adjust if you know different codec
+    if(!supportsRange || isNaN(contentLength)) return false;
+    const mime = 'audio/mpeg';
     const mediaSource = new MediaSource();
     currentMSE.mediaSource = mediaSource;
     currentMSE.queue = [];
     currentMSE.fetchController = new AbortController();
     currentMSE.isUsingMSE = true;
-
-    // attach object URL
     const objectUrl = URL.createObjectURL(mediaSource);
     currentMSE.objectUrl = objectUrl;
     player.src = objectUrl;
-
-    // once source open, create SourceBuffer
     await new Promise((resolve, reject) => {
       const onSourceOpen = () => {
         try{
-          // MIME may vary; try 'audio/mpeg' first
           const sb = mediaSource.addSourceBuffer(mime);
           currentMSE.sourceBuffer = sb;
           resolve();
-        }catch(err){
-          // unable to create sourceBuffer for mime -> reject
-          reject(err);
-        } finally {
-          mediaSource.removeEventListener('sourceopen', onSourceOpen);
-        }
+        }catch(err){ reject(err); }
+        finally { mediaSource.removeEventListener('sourceopen', onSourceOpen); }
       };
       mediaSource.addEventListener('sourceopen', onSourceOpen);
-      // safety timeout in case sourceopen never fires
       setTimeout(()=> {
-        if(mediaSource.readyState !== 'open') {
-          reject(new Error('MediaSource open timeout'));
-        }
+        if(mediaSource.readyState !== 'open') reject(new Error('MediaSource open timeout'));
       }, 5000);
     });
-
-    // now fetch in ranges and append
-    const chunkSize = 64 * 1024; // 64KB chunks (tuneable)
+    const chunkSize = 64 * 1024;
     let start = 0;
     const total = contentLength;
     const sb = currentMSE.sourceBuffer;
-
-    // append queue helper (ensures we don't append while updating)
     function appendBufferChunk(ab){
       if(!sb) return;
-      if(sb.updating){
-        currentMSE.queue.push(ab);
-      } else {
-        try{
-          sb.appendBuffer(ab);
-        }catch(err){
-          console.error('appendBuffer error', err);
-          // if error, try to clear queue to avoid blocking
-        }
-      }
+      if(sb.updating) currentMSE.queue.push(ab);
+      else sb.appendBuffer(ab);
     }
-    // when update ends, flush queue
     sb.addEventListener('updateend', ()=>{
       if(currentMSE.queue.length){
         const next = currentMSE.queue.shift();
         try{ sb.appendBuffer(next); } catch(e){ console.error(e); }
-      } else {
-        // if mediaSource is open and full buffer appended, we can optionally set duration
-        // mediaSource.duration = Math.max(mediaSource.duration || 0, player.duration || 0);
       }
     });
-
-    // orchestrate fetch loop
     const controller = currentMSE.fetchController;
     const signal = controller.signal;
-
-    // start playback as soon as we appended first chunk and there's enough data
     let appendedFirstChunk = false;
-
     while(start < total){
-      // if aborted, throw to break
       if(signal.aborted) throw new Error('aborted');
-
       const end = Math.min(start + chunkSize - 1, total - 1);
       const rangeHeader = `bytes=${start}-${end}`;
       const resp = await fetch(url, { headers: { Range: rangeHeader }, signal });
-      if(!resp.ok && resp.status !== 206){
-        // server didn't honor the range request
-        throw new Error('Range request failed with status ' + resp.status);
-      }
+      if(!resp.ok && resp.status !== 206) throw new Error('Range request failed with status ' + resp.status);
       const arrayBuffer = await resp.arrayBuffer();
       appendBufferChunk(arrayBuffer);
-
-      // once we appended first chunk, try to play
       if(!appendedFirstChunk){
         appendedFirstChunk = true;
-        // attempt play (may be blocked by browser autoplay policies)
-        player.play().catch(()=>{ /* ignore */ });
+        player.play().catch(()=>{});
       }
-
       start += chunkSize;
     }
-
-    // all chunks fetched -> signal endOfStream when buffer drained
-    // wait until sourceBuffer finishes updating and then call endOfStream
     const waitForAllAppended = () => new Promise((resolve) => {
       const check = () => {
         if(!sb.updating && currentMSE.queue.length === 0) resolve();
@@ -638,17 +556,9 @@ async function loadTrackWithMSE(url){
       check();
     });
     await waitForAllAppended();
-
-    // set duration if available
-    try{
-      if(currentMSE.mediaSource && currentMSE.mediaSource.readyState === 'open'){
-        currentMSE.mediaSource.endOfStream();
-      }
-    }catch(e){ /* ignore */ }
-
+    try{ if(currentMSE.mediaSource && currentMSE.mediaSource.readyState === 'open'){ currentMSE.mediaSource.endOfStream(); } }catch(e){}
     return true;
   }catch(err){
-    // on any error, cleanup MSE and propagate false so caller falls back
     cleanupCurrentMSE();
     console.warn('MSE pipeline error', err);
     return false;
@@ -656,27 +566,14 @@ async function loadTrackWithMSE(url){
 }
 
 function cleanupCurrentMSE(){
-  try{
-    if(currentMSE.fetchController){
-      currentMSE.fetchController.abort();
-    }
-  }catch(e){}
+  try{ if(currentMSE.fetchController) currentMSE.fetchController.abort(); }catch(e){}
   try{
     if(currentMSE.sourceBuffer && currentMSE.mediaSource && currentMSE.mediaSource.readyState === 'open'){
-      // can't always remove; some browsers restrict removal while updating
-      // guard with try/catch
       try{ currentMSE.mediaSource.removeSourceBuffer(currentMSE.sourceBuffer); } catch(e){}
     }
   }catch(e){}
-  try{
-    if(currentMSE.objectUrl){
-      URL.revokeObjectURL(currentMSE.objectUrl);
-    }
-  }catch(e){}
-  // reset state
+  try{ if(currentMSE.objectUrl) URL.revokeObjectURL(currentMSE.objectUrl); }catch(e){}
   currentMSE = { mediaSource: null, sourceBuffer: null, objectUrl: null, fetchController: null, queue: [], isUsingMSE: false };
-  // ensure player uses a "normal" src after cleanup (avoid stale objectURL)
-  // we do not overwrite player.src here to allow caller to set fallback src
 }
 
 /* player events */
@@ -691,10 +588,8 @@ player.addEventListener('timeupdate', ()=> {
     if(bigBar) bigBar.style.width = pct + '%';
     if(timeCurrent) timeCurrent.textContent = formatTime(player.currentTime);
     if(timeTotal) timeTotal.textContent = formatTime(player.duration);
-    // -------------- AÑADIDO: actualizar tiempos en la leftPane --------------
     if(leftTimeCurrent) leftTimeCurrent.textContent = formatTime(player.currentTime);
     if(leftTimeTotal) leftTimeTotal.textContent = formatTime(player.duration);
-    // -----------------------------------------------------------------------
   }
 });
 player.addEventListener('ended', ()=> {
@@ -703,7 +598,7 @@ player.addEventListener('ended', ()=> {
 });
 function formatTime(s){ if(!s || isNaN(s)) return '0:00'; const min = Math.floor(s/60); const sec = Math.floor(s%60).toString().padStart(2,'0'); return `${min}:${sec}`; }
 
-/* ========== Gallery & Modal ========== */
+/* ===== Gallery & Modal ===== */
 function populateGallery(){
   galleryGrid.innerHTML = '';
   DATA.gallery.forEach((url, idx)=>{
@@ -740,10 +635,11 @@ photoClose.addEventListener('click', closePhoto);
 photoModal.addEventListener('click', (e)=> { if(e.target === photoModal) closePhoto(); });
 modalImg.addEventListener('click', (e)=> e.stopPropagation());
 
-/* ========== Wheel rotation (scroll behavior) ========== */
+/* ===== Wheel rotation (entrada para la rueda) ===== */
 let tracking=false, lastAngle=null, accumulator=0;
-const THRESH = 18; // smaller threshold for more responsive scrolling
+const THRESH = 18; // sensibilidad de cada "paso"
 
+/* calcula ángulo desde evento */
 function angleFromEvent(e){
   const rect = wheel.getBoundingClientRect();
   const cx = rect.left + rect.width/2;
@@ -754,38 +650,34 @@ function angleFromEvent(e){
   return Math.atan2(y, x) * 180 / Math.PI;
 }
 
+/* procesar pasos detectados por la rueda
+   dir: 1 => sentido horario (bajar), -1 => antihorario (subir) */
 function step(delta){
-  // clamp large deltas that sometimes happen on mobile
   if(delta > 60) delta = 60;
   if(delta < -60) delta = -60;
 
   accumulator += delta;
-
-  // keep accumulator bounded to avoid runaway values
   const maxAccum = THRESH * 4;
   if(accumulator > maxAccum) accumulator = maxAccum;
   if(accumulator < -maxAccum) accumulator = -maxAccum;
 
   if(Math.abs(accumulator) >= THRESH){
     const steps = Math.floor(Math.abs(accumulator) / THRESH);
-    const dir = accumulator > 0 ? 1 : -1; // 1 => clockwise (down), -1 => ccw (up)
-    // keep remainder instead of zeroing to avoid jumpy behavior
+    const dir = accumulator > 0 ? 1 : -1;
     accumulator = accumulator - dir * steps * THRESH;
 
-    // Behavior per context
-    if(!inPage){
-      // menu navigation with wheel rotation -- unchanged behavior
+    // comportamiento específico si estamos en la página de juegos
+    if(inPage && currentPageId === 'games' && window.Game){
+      window.Game.handleWheel(dir * steps); // control del juego por la rueda
+    } else if(!inPage){
       currentMenuIndex = (currentMenuIndex + dir * steps + DATA.menu.length) % DATA.menu.length;
       renderMenu();
     } else {
-      // inside a page
       if(currentPageId === 'photos' && photoModal.classList.contains('open')){
-        // change photo
         currentPhotoIndex = (currentPhotoIndex + dir * steps + DATA.gallery.length) % DATA.gallery.length;
         modalImg.src = DATA.gallery[currentPhotoIndex];
         highlightActiveThumb();
       } else {
-        // scroll the active page (clamped inside helper)
         scrollActivePage(steps, dir);
       }
     }
@@ -794,9 +686,9 @@ function step(delta){
   }
 }
 
-/* Start tracking only when user is not pressing a button (so clicks still work) */
+/* eventos de puntero/táctil para la rueda */
 wheel.addEventListener('pointerdown', (e)=>{
-  if(isInsideButton(e.target)) return; // ignore pointerdown if clicking a button (so button click works)
+  if(isInsideButton(e.target)) return;
   tracking = true;
   lastAngle = angleFromEvent(e);
   try{ wheel.setPointerCapture && wheel.setPointerCapture(e.pointerId); }catch(err){}
@@ -808,7 +700,6 @@ wheel.addEventListener('pointermove', (e)=>{
   if(delta > 180) delta -= 360;
   if(delta < -180) delta += 360;
   lastAngle = a;
-  // guard against extreme deltas on mobile
   if(delta > 60) delta = 60;
   if(delta < -60) delta = -60;
   step(delta);
@@ -817,7 +708,6 @@ wheel.addEventListener('pointerup', (e)=>{
   tracking=false; lastAngle=null; accumulator=0;
   try{ wheel.releasePointerCapture && wheel.releasePointerCapture(e.pointerId); }catch(err){}
 });
-/* Touch fallback */
 wheel.addEventListener('touchstart', (e)=>{
   if(isInsideButton(e.target)) return;
   tracking=true; lastAngle = angleFromEvent(e);
@@ -829,7 +719,6 @@ wheel.addEventListener('touchmove', (e)=>{
   if(delta > 180) delta -= 360;
   if(delta < -180) delta += 360;
   lastAngle = a;
-  // guard against extreme deltas on mobile browsers
   if(delta > 60) delta = 60;
   if(delta < -60) delta = -60;
   step(delta);
@@ -837,7 +726,7 @@ wheel.addEventListener('touchmove', (e)=>{
 }, {passive:false});
 wheel.addEventListener('touchend', ()=>{ tracking=false; lastAngle=null; accumulator=0; });
 
-/* ========== Wheel buttons (real buttons) ========== */
+/* ===== Botones de la rueda ===== */
 function safePlayToggle(){
   if(!player.src) { playTrack(0); return; }
   if(player.paused) { player.play().catch(()=>{}); }
@@ -851,16 +740,15 @@ document.getElementById('btn-select').addEventListener('click', ()=>{
   } else {
     if(currentPageId === 'music') safePlayToggle();
     else if(currentPageId === 'photos') openPhoto(0);
+    else if(currentPageId === 'games' && window.Game) window.Game.togglePause();
   }
 });
 document.getElementById('btn-menu').addEventListener('click', ()=>{
   if(inPage) showPage(null);
   else { currentMenuIndex = 0; renderMenu(); }
 });
-/* --------------- MODIFICADO: btn-prev / btn-next cuando estamos en el menu principal saltan pistas --------------- */
 document.getElementById('btn-prev').addEventListener('click', ()=>{
   if(!inPage){
-    // en menu principal -> cambiar pista (la rueda sigue navegando el menu)
     const prev = (currentTrackIndex - 1 + DATA.tracks.length) % DATA.tracks.length;
     playTrack(prev);
   } else if(currentPageId === 'music'){
@@ -868,13 +756,11 @@ document.getElementById('btn-prev').addEventListener('click', ()=>{
   } else if(currentPageId === 'photos'){
     if(photoModal.classList.contains('open')) photoPrev.click(); else openPhoto(DATA.gallery.length - 1);
   } else {
-    // scroll up small
     if(currentPageId) pages[currentPageId].scrollBy({top:-80, behavior:'smooth'});
   }
 });
 document.getElementById('btn-next').addEventListener('click', ()=>{
   if(!inPage){
-    // en menu principal -> cambiar pista (la rueda sigue navegando el menu)
     const next = (currentTrackIndex + 1) % DATA.tracks.length;
     playTrack(next);
   } else if(currentPageId === 'music'){
@@ -885,10 +771,9 @@ document.getElementById('btn-next').addEventListener('click', ()=>{
     if(currentPageId) pages[currentPageId].scrollBy({top:80, behavior:'smooth'});
   }
 });
-/* ------------------------------------------------------------------------------------------------------------------ */
 document.getElementById('btn-play').addEventListener('click', ()=> safePlayToggle());
 
-/* ========== Keyboard support & accessibility ========== */
+/* ===== Soporte teclado y accesibilidad ===== */
 window.addEventListener('keydown', (e)=>{
   if(e.key === 'ArrowUp'){ currentMenuIndex = (currentMenuIndex - 1 + DATA.menu.length) % DATA.menu.length; renderMenu(); }
   if(e.key === 'ArrowDown'){ currentMenuIndex = (currentMenuIndex + 1) % DATA.menu.length; renderMenu(); }
@@ -896,21 +781,17 @@ window.addEventListener('keydown', (e)=>{
   if(e.key === 'Escape'){ document.getElementById('btn-menu').click(); if(photoModal.classList.contains('open')) closePhoto(); }
 });
 
-/* Live region for a11y */
+/* Live region accesible */
 const live = document.createElement('div');
 live.setAttribute('aria-live','polite'); live.style.position='absolute'; live.style.left='-9999px';
 document.body.appendChild(live);
 const mo = new MutationObserver(()=> live.textContent = DATA.menu[currentMenuIndex].label + ' seleccionado');
 mo.observe(menuList,{childList:true,subtree:true});
 
-/* ========== Swipe on pages to reveal leftPane (mobile) ========== */
-/*
-  - When in a page (inPage===true), allow horizontal swipe right on the rightPane/pages to show leftPane (reproduction).
-  - This is intentionally lightweight: detect horizontal delta on touch/pointer.
-*/
+/* ===== Swipe en páginas para volver al menú (móvil) ===== */
 (function enablePageSwipeToLeft(){
   let startX = null, startY = null, trackingSwipe = false;
-  const threshold = 50; // px to consider swipe
+  const threshold = 50;
   function onStart(e){
     if(!inPage) return;
     const ev = (e.touches && e.touches[0]) ? e.touches[0] : e;
@@ -918,36 +799,25 @@ mo.observe(menuList,{childList:true,subtree:true});
     startY = ev.clientY;
     trackingSwipe = true;
   }
-  function onMove(e){
-    if(!trackingSwipe) return;
-    // nothing here; we handle on end
-  }
   function onEnd(e){
     if(!trackingSwipe) return;
     const ev = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : e;
     const dx = ev.clientX - startX;
     const dy = ev.clientY - startY;
-    // ignore mostly vertical gestures
     if(Math.abs(dx) > Math.abs(dy) && dx > threshold){
-      // swipe right detected -> show left pane (simulate MENU)
       showPage(null);
     }
     startX = null; startY = null; trackingSwipe = false;
   }
-
-  // attach to each page so that swipe inside pages works
   Object.values(pages).forEach(p => {
     p.addEventListener('touchstart', onStart, {passive:true});
-    p.addEventListener('touchmove', onMove, {passive:true});
     p.addEventListener('touchend', onEnd, {passive:true});
-
-    // pointer fallback
     p.addEventListener('pointerdown', (ev)=> { if(ev.pointerType === 'touch') onStart(ev); }, {passive:true});
     p.addEventListener('pointerup', (ev)=> { if(ev.pointerType === 'touch') onEnd(ev); }, {passive:true});
   });
 })();
 
-/* ========== Initialize ========== */
+/* ===== Inicializar ===== */
 function init(){
   initArtist();
   renderMenu();
@@ -955,36 +825,24 @@ function init(){
 
   currentTrackIndex = 0;
   const first = DATA.tracks[0];
-
-  // ⚡ Configurar el primer track desde el inicio
   player.src = first.src;
   player.preload = "metadata";
   player.pause();
-
-  // Mostrar carátula y textos desde el arranque
   updateNowPlayingUI(first);
-
   if(bigBar) bigBar.style.width = "0%";
 }
-
 init();
 
-/* prevent dragging images on desktop */
+/* evitar arrastrar imágenes */
 document.addEventListener('dragstart', (e)=>{ if(e.target.tagName === 'IMG') e.preventDefault(); });
 
-// --- Swipe horizontal para volver al menú ---
+/* swipe horizontal extra para mostrar/ocultar leftPane (comportamiento táctil) */
 const content = document.getElementById("content");
 let startX = 0;
-
-content.addEventListener("touchstart", (e) => {
-  startX = e.touches[0].clientX;
-}, { passive: true });
-
+content.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; }, { passive: true });
 content.addEventListener("touchend", (e) => {
   let endX = e.changedTouches[0].clientX;
   let diffX = endX - startX;
-
-  // si estás en una página y haces swipe a la derecha
   if (diffX > 50 && inPage) {
     const activePage = document.querySelector(".page.active");
     if (activePage) {
@@ -992,27 +850,18 @@ content.addEventListener("touchend", (e) => {
       document.getElementById("menuList").style.display = "block";
       inPage = false;
     }
-  }
-
-  // si no hay página activa y haces swipe a la izquierda/derecha
-  else if (Math.abs(diffX) > 50 && !inPage) {
+  } else if (Math.abs(diffX) > 50 && !inPage) {
     if (diffX > 0) {
-      // swipe derecha → mostrar sección izquierda (reproducción)
       document.getElementById("leftPane").classList.remove("hidden");
       document.getElementById("rightPane").classList.remove("full");
     } else {
-      // swipe izquierda → mostrar sección derecha (menú/páginas)
       document.getElementById("leftPane").classList.add("hidden");
       document.getElementById("rightPane").classList.add("full");
     }
   }
 }, { passive: true });
 
-/* ========== STATUS ICONS (battery + signal) runtime updater
-   - Minimal, graceful: uses navigator.getBattery and navigator.connection when available.
-   - If unavailable, shows sensible fallbacks (static or simulated).
-   - DOES NOT modify any other app logic.
-*/
+/* ===== STATUS ICONS (batería + señal) ===== */
 (function initStatusIcons(){
   const battLevelEl = document.getElementById('batteryLevel');
   const batteryWrap = document.getElementById('batteryWrap');
@@ -1021,48 +870,35 @@ content.addEventListener("touchend", (e) => {
   function setBatteryLevel(p){
     const clamped = Math.max(0, Math.min(1, p));
     battLevelEl.style.width = (clamped*100) + '%';
-    // color thresholds similar to iOS: green/yellow/red
-    let color = '#4caf50'; // verde por defecto
-    if(clamped <= 0.15) color = '#f44336'; // rojo
-    else if(clamped <= 0.35) color = '#ffeb3b'; // amarillo
+    let color = '#4caf50';
+    if(clamped <= 0.15) color = '#f44336';
+    else if(clamped <= 0.35) color = '#ffeb3b';
     battLevelEl.style.background = color;
     batteryWrap.classList.toggle('low', clamped <= 0.15);
   }
 
-  // --- Simulación de ciclo descarga/carga ---
-  let batteryLevel = 1.0; // 100%
+  let batteryLevel = 1.0;
   let discharging = true;
 
   function simulateBattery(){
     if(discharging){
-      batteryLevel -= 0.05; // baja 5%
-      if(batteryLevel <= 0){
-        batteryLevel = 0;
-        discharging = false; // empieza a cargar
-      }
+      batteryLevel -= 0.05;
+      if(batteryLevel <= 0){ batteryLevel = 0; discharging = false; }
     } else {
-      batteryLevel += 0.05; // sube 5%
-      if(batteryLevel >= 1){
-        batteryLevel = 1;
-        discharging = true; // vuelve a descargar
-      }
+      batteryLevel += 0.05;
+      if(batteryLevel >= 1){ batteryLevel = 1; discharging = true; }
     }
     setBatteryLevel(batteryLevel);
   }
 
-  // inicializa al 100%
   setBatteryLevel(batteryLevel);
-  // cada minuto cambia
   setInterval(simulateBattery, 60000);
 
-  // --- Signal (igual que tenías) ---
   function renderSignal(effectiveType){
     const map = { 'slow-2g':1, '2g':1, '3g':2, '4g':4, 'wifi':4, undefined:3 };
     const bars = map[effectiveType] ?? 3;
     const spans = signalWrap.querySelectorAll('span');
-    spans.forEach((s, i) => {
-      if(i < bars) s.classList.add('active'); else s.classList.remove('active');
-    });
+    spans.forEach((s, i) => { if(i < bars) s.classList.add('active'); else s.classList.remove('active'); });
   }
 
   if(navigator.connection && navigator.connection.effectiveType){
@@ -1073,7 +909,7 @@ content.addEventListener("touchend", (e) => {
   }
 })();
 
-/* ========== Clock (real system time) ========== */
+/* ===== Reloj real ===== */
 function updateClock() {
   const now = new Date();
   let hours = now.getHours();
@@ -1084,11 +920,203 @@ function updateClock() {
   const timeString = `${hours}:${minutes} ${ampm} • Music`;
   document.getElementById("headerTitle").textContent = timeString;
 }
-
 updateClock();
 setInterval(updateClock, 60000);
 
+/* ======= JUEGO: Pong rápido controlado por la rueda =======
+   Implementación clara, rápida y robusta.
+   - La rueda mueve la paleta del jugador (izquierda).
+   - Bola con velocidad alta y rebotes confiables.
+   - OK pausa/continúa, botones reiniciar/pausa en HUD.
+   - Separa la lógica del juego en window.Game para control externo.
+================================================================*/
+(function setupGame(){
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
 
+  // Tamaño de juego interno (escalable)
+  const W = 320, H = 240;
+  canvas.width = W; canvas.height = H;
+
+  // Parámetros
+  const paddleW = 8, paddleH = 44;
+  const playerX = 10;
+  const aiX = W - 10 - paddleW;
+  const ballSize = 8;
+
+  // Estado
+  let playerY = (H - paddleH)/2;
+  let aiY = (H - paddleH)/2;
+  let ballX = W/2 - ballSize/2;
+  let ballY = H/2 - ballSize/2;
+  let ballVX = 220; // px/s
+  let ballVY = 140; // px/s
+  let lastTime = 0;
+  let rafId = null;
+  let running = false;
+  let score = { player:0, ai:0 };
+  let lastWheelMove = 0;
+
+  // Ajustes de velocidad para que sea "muy rápido" pero estable
+  const SPEED_MULT = 1.0; // se puede ajustar
+  const aiSpeed = 160;
+
+  // Limita paleta dentro del canvas
+  function clampPaddle(y){ return Math.max(0, Math.min(H - paddleH, y)); }
+
+  // Reiniciar estado del juego
+  function reset(posRightWins=false){
+    playerY = (H - paddleH)/2;
+    aiY = (H - paddleH)/2;
+    ballX = W/2 - ballSize/2;
+    ballY = H/2 - ballSize/2;
+    // dirección aleatoria pero rápida
+    const angle = (Math.random() * 0.6 - 0.3); // -0.3..0.3 radians
+    const dir = posRightWins ? -1 : (Math.random() < 0.5 ? -1 : 1);
+    ballVX = dir * (200 + Math.random() * 120) * SPEED_MULT;
+    ballVY = (150 + Math.random() * 120) * (Math.random()<0.5 ? -1 : 1) * SPEED_MULT;
+  }
+
+  // Dibujado con colores vivos
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    // fondo con gradiente
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#062235'); g.addColorStop(1,'#031022');
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+    // líneas centrales
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    for(let y=0;y<H;y+=12) ctx.fillRect(W/2 - 1, y, 2, 8);
+
+    // paletas
+    ctx.fillStyle = '#6EE7B7'; ctx.fillRect(playerX, playerY, paddleW, paddleH); // jugador
+    ctx.fillStyle = '#60A5FA'; ctx.fillRect(aiX, aiY, paddleW, paddleH); // IA
+
+    // bola
+    ctx.fillStyle = '#FF7AA2'; ctx.beginPath(); ctx.arc(ballX + ballSize/2, ballY + ballSize/2, ballSize/2, 0, Math.PI*2); ctx.fill();
+
+    // marcador
+    ctx.fillStyle = '#cfe8ff'; ctx.font = '14px system-ui, Arial'; ctx.fillText(`${score.player}`, W/2 - 40, 20); ctx.fillText(`${score.ai}`, W/2 + 30, 20);
+  }
+
+  function stepGame(ts){
+    if(!running){ lastTime = ts; rafId = requestAnimationFrame(stepGame); return; }
+    if(!lastTime) lastTime = ts;
+    const dt = Math.min(0.05, (ts - lastTime)/1000); // dt en segundos, clamp para estabilidad
+    lastTime = ts;
+
+    // mover bola
+    ballX += ballVX * dt;
+    ballY += ballVY * dt;
+
+    // colisiones superior/inferior
+    if(ballY < 0){ ballY = 0; ballVY = Math.abs(ballVY); }
+    if(ballY + ballSize > H){ ballY = H - ballSize; ballVY = -Math.abs(ballVY); }
+
+    // colisión con paleta jugador
+    if(ballX <= playerX + paddleW && ballX + ballSize >= playerX){
+      if(ballY + ballSize >= playerY && ballY <= playerY + paddleH){
+        ballX = playerX + paddleW;
+        // calcular rebote según zona de la paleta
+        const relative = (ballY + ballSize/2) - (playerY + paddleH/2);
+        const norm = relative / (paddleH/2); // -1 .. 1
+        const bounceAngle = norm * Math.PI/3; // <= 60°
+        const speed = Math.hypot(ballVX, ballVY) * 1.05; // pequeño incremento
+        ballVX = Math.abs(Math.cos(bounceAngle) * speed);
+        ballVY = Math.sin(bounceAngle) * speed;
+        // pequeño "empujón" para evitar pegajosidad
+        lastWheelMove = performance.now();
+      }
+    }
+
+    // colisión con paleta IA
+    if(ballX + ballSize >= aiX && ballX <= aiX + paddleW){
+      if(ballY + ballSize >= aiY && ballY <= aiY + paddleH){
+        ballX = aiX - ballSize;
+        const relative = (ballY + ballSize/2) - (aiY + paddleH/2);
+        const norm = relative / (paddleH/2);
+        const bounceAngle = norm * Math.PI/3;
+        const speed = Math.hypot(ballVX, ballVY) * 1.02;
+        ballVX = -Math.abs(Math.cos(bounceAngle) * speed);
+        ballVY = Math.sin(bounceAngle) * speed;
+      }
+    }
+
+    // marcador: fuera izquierda/derecha
+    if(ballX + ballSize < 0){
+      score.ai += 1;
+      reset(false);
+    } else if(ballX > W){
+      score.player += 1;
+      reset(true);
+    }
+
+    // IA simple: perseguir la bola con límite de velocidad
+    const aiCenter = aiY + paddleH/2;
+    const targetY = ballY + ballSize/2 - paddleH/2;
+    const diff = targetY - aiY;
+    const maxMove = aiSpeed * dt;
+    if(Math.abs(diff) > maxMove) aiY += Math.sign(diff) * maxMove;
+    else aiY = targetY;
+    aiY = clampPaddle(aiY);
+
+    render();
+    rafId = requestAnimationFrame(stepGame);
+  }
+
+  // API pública del juego
+  window.Game = {
+    start(){
+      if(running) return;
+      running = true;
+      lastTime = 0;
+      if(!rafId) rafId = requestAnimationFrame(stepGame);
+    },
+    stop(){
+      running = false;
+      if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    },
+    togglePause(){
+      running = !running;
+      if(running && !rafId) rafId = requestAnimationFrame(stepGame);
+    },
+    restart(){
+      score = { player:0, ai:0 };
+      reset();
+      running = true;
+      lastTime = 0;
+      if(!rafId) rafId = requestAnimationFrame(stepGame);
+    },
+    handleWheel(deltaSteps){
+      // deltaSteps positivo -> sentido reloj -> mover paleta hacia abajo
+      // cada "paso" mueve la paleta N pixeles
+      const movePerStep = 8; // alto para respuesta rápida
+      playerY = clampPaddle(playerY + (-deltaSteps) * movePerStep); // invertir según UX: rueda horario baja menú -> aquí invertimos para que coincida con intuición
+      // para evitar saltos extra, forzamos render inmediato si está en pausa
+      if(!running){ render(); }
+    },
+    // permite consulta externa
+    get running(){ return running; },
+    get score(){ return score; }
+  };
+
+  // botones del HUD
+  document.getElementById('gameRestart').addEventListener('click', ()=> window.Game.restart());
+  document.getElementById('gamePause').addEventListener('click', ()=> { window.Game.togglePause(); document.getElementById('gamePause').textContent = window.Game.running ? 'Pausa' : 'Reanudar'; });
+
+  // iniciar en estado detenido hasta que el usuario entre a la página
+  reset();
+  render();
+})();
+
+/* ===== Control adicional: al entrar/salir de la página juegos ===== */
+window.addEventListener('visibilitychange', ()=> {
+  if(document.hidden && window.Game && window.Game.running) window.Game.stop();
+});
+
+/* ===== Botón físico OK también controla juego (ya definido arriba) ===== */
+/* Fin del script */
 </script>
 </body>
 </html>
