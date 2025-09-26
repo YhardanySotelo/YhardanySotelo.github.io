@@ -949,8 +949,8 @@ setInterval(updateClock, 60000);
   let aiY = (H - paddleH)/2;
   let ballX = W/2 - ballSize/2;
   let ballY = H/2 - ballSize/2;
-  let ballVX = 220; // px/s
-  let ballVY = 140; // px/s
+  let ballVX = 140; // px/s
+  let ballVY = 100; // px/s
   let lastTime = 0;
   let rafId = null;
   let running = false;
@@ -958,7 +958,7 @@ setInterval(updateClock, 60000);
   let lastWheelMove = 0;
 
   // Ajustes de velocidad para que sea "muy rápido" pero estable
-  const SPEED_MULT = 1.0; // se puede ajustar
+  const SPEED_MULT = 0.6; // se puede ajustar
   const aiSpeed = 160;
 
   // Limita paleta dentro del canvas
@@ -1120,3 +1120,4 @@ window.addEventListener('visibilitychange', ()=> {
 </script>
 </body>
 </html>
+
