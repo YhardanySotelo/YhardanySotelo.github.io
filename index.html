@@ -5,12 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>iPod Classic - Rueda funcional + scroll</title>
 <style>
-  /* Reset */
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;background:#8d8d8d;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#fff;-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
-
-  /* iPod container */
   .ipod-wrap{width:420px;max-width:94vw;margin:20px auto;padding:16px;
     background:linear-gradient(180deg,#26292d,#1b1b1b);
     border-radius:28px;box-shadow:0 30px 60px rgba(0,0,0,.6), inset 0 6px 20px rgba(255,255,255,.02);
@@ -20,8 +17,19 @@
   .header{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;font-weight:600;font-size:13px;color:#e6e6e6;z-index:3}
   .header .title{font-weight:700}
   .header .icons{font-size:12px;color:#bdbdbd}
-
-  /* Layout: split */
+  .header .icons{display:flex;align-items:center;gap:10px;color:#cfdde6}
+  .signal{display:flex;align-items:flex-end;gap:3px;height:12px}
+  .signal span{width:3px;border-radius:2px;background:rgba(255,255,255,0.22);transition:background .18s,opacity .18s}
+  .signal span.bar1{height:5px}
+  .signal span.bar2{height:7px}
+  .signal span.bar3{height:9px}
+  .signal span.bar4{height:11px}
+  .signal span.active{background:#cfdde6;opacity:1}
+  .battery{position:relative;width:24px;height:12px;border:1px solid #cfdde6;border-radius:2px;overflow:hidden}
+  .battery::after{content:"";position:absolute;top:3px;right:-3px;width:2px;height:6px;background:#cfdde6;border-radius:1px}
+  .battery-level {height:100%;width:100%; /* empieza llena */background:#4caf50; /* verde */border-radius:1px;transition:width 1s ease, background 1s ease;}
+  .battery.charging .battery-level{animation:batt-pulse 1s infinite}
+  @keyframes batt-pulse{0%{opacity:.85}50%{opacity:1}100%{opacity:.85}}
   .content{position:relative;height:calc(100% - 42px);display:flex;background:linear-gradient(180deg,#061220 0%, #0b1720 100%)}
   .leftPane{
     width:56%;min-width:140px;padding:14px;display:flex;flex-direction:column;justify-content:center;align-items:center;
@@ -29,7 +37,6 @@
     border-right:1px solid rgba(255,255,255,.02);
     overflow:hidden;
   }
-  /* Keep small hint of left pane (5%) when a page is active */
   .leftPane.hidden{width:5%;opacity:.38;padding:8px 6px;min-width:54px}
   .leftOverlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.75));z-index:1}
   .artistAvatar{width:110px;height:110px;border-radius:10px;object-fit:cover;z-index:2;box-shadow:0 12px 30px rgba(0,0,0,.6)}
@@ -37,13 +44,9 @@
   .nowInfo .title{font-weight:800;font-size:16px;color:#fff}
   .nowInfo .artist{font-size:12px;color:#d7e6ef;margin-top:4px}
   .bigProgress{width:92%;height:8px;background:rgba(255,255,255,.06);border-radius:10px;margin-top:10px;overflow:hidden;z-index:2}
-  .bigProgress .bar{height:100%;width:0%;background:linear-gradient(90deg,#6ae2ff,#2a9df4);transition:width .12s linear}
-
-  /* rightPane */
+  .bigProgress .bar{height:100%;width:0%;background:linear-gradient(90deg,#6aff80,#03742d);transition:width .12s linear}
   .rightPane{width:44%;padding:12px;display:flex;flex-direction:column;gap:8px;justify-content:flex-start;align-items:flex-start;overflow:auto;transition:width .36s cubic-bezier(.2,.9,.3,1)}
   .rightPane.full{width:95%}
-
-  /* Menu */
   .menu{list-style:none;padding:8px 6px;width:100%;color:#fff;overflow:auto}
   .menu li{padding:10px 12px;border-radius:8px;margin-bottom:8px;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.02));
     display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:transform .12s,background .12s;outline:none}
@@ -51,56 +54,44 @@
   .menu li:hover{transform:translateX(4px)}
   .menu li.selected{background: linear-gradient(180deg, #e1dd90, #333232);transform:translateX(6px);color:#012;font-weight:700}
   .menu li .subtitle{font-size:12px;color:rgba(255,255,255,.7)}
-
-
-
-  /* Pages */
-  .page{display:none;padding:6px;height:100%;overflow:auto}
+  .page{display:none;padding:6px;height:100%;overflow:auto; -webkit-overflow-scrolling: touch;}
   .page.active{display:block;animation:fadeIn .24s ease}
-
   @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-  /* Bio */
   .bio .avatar{width:100%;height:160px;border-radius:10px;object-fit:cover;margin-bottom:12px}
   .bio h3{margin-bottom:8px}
   .bio p{color:#e9eef2;line-height:1.5;font-size:14px}
-
-  /* Music / Now Playing */
   .nowPlaying{display:flex;flex-direction:column;align-items:center;gap:12px;padding:6px;height:100%;justify-content:flex-start}
   .nowPlaying .art{width:60%;max-width:320px;height:auto;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,.7)}
   .nowPlaying .meta{width:90%;text-align:center}
   .nowPlaying .meta .song{font-weight:800;font-size:18px}
   .nowPlaying .meta .artist{font-size:13px;color:#cfdde6;margin-top:6px}
   .timeRow{width:90%;Display:flex;justify-content:space-between;font-size:12px;color:#bfcfd6;margin-top:6px}
-
+  .timeRowSmall {width: 92%;display: flex;justify-content: space-between;font-size: 11px;color: #bfcfd6;margin: 6px 0 4px 0; /* más espacio arriba y abajo */ z-index: 2;}
   .tracks{width:100%;margin-top:8px}
   .track{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:rgba(255,255,255,.03);margin-bottom:8px;cursor:pointer}
   .track:hover{background:rgba(255,255,255,.05)}
   .track button{background:linear-gradient(180deg,#1db954,#17a44a);border:none;padding:6px 10px;border-radius:6px;color:#022;font-weight:700;cursor:pointer}
-
-  /* Gallery */
   .galleryGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
   .galleryGrid img{width:100%;height:110px;object-fit:cover;border-radius:8px;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.5);transition:transform .25s}
   .galleryGrid img:hover{transform:scale(1.02)}
-
-  /* Socials */
   .socials{display:flex;flex-direction:column;gap:8px}
   .socials a{padding:10px;border-radius:8px;background:rgba(255,255,255,.03);color:#fff;display:flex;align-items:center;gap:8px;cursor:pointer}
-
-  /* Wheel */
   .controls{display:flex;justify-content:center;padding:14px}
   .wheel{width:240px;height:240px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#2b2b2b 0%,#111 60%);position:relative;box-shadow:0 20px 50px rgba(0,0,0,.7),inset 0 6px 20px rgba(255,255,255,.02)}
-  /* ensure actual buttons inside wheel render like the design (remove default button chrome) */
   .wheel button{background:none;border:none;color:inherit;font:inherit;padding:0;margin:0}
   .wheel .center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#151515 0%,#000 70%);box-shadow:inset 0 6px 18px rgba(255,255,255,.02);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;cursor:pointer}
   .wheel .btn-menu{position:absolute;top:14%;left:50%;transform:translateX(-50%);font-size:12px;color:#d9d9d9;cursor:pointer}
-  .wheel .btn-prev{position:absolute;left:14%;top:50%;transform:translateY(-50%);font-size:16px;color:#d9d9d9;cursor:pointer}
-  .wheel .btn-next{position:absolute;right:14%;top:50%;transform:translateY(-50%);font-size:16px;color:#d9d9d9;cursor:pointer}
-  .wheel .btn-play{position:absolute;bottom:14%;left:50%;transform:translateX(-50%);font-size:14px;color:#d9d9d9;cursor:pointer}
-  .wheel .tiny{font-size:12px;color:rgba(255,255,255,.75)}
-
-
-  /* Photo modal inside the ipod screen (not fixed to viewport) */
+  .wheel .btn-prev{position:absolute;left:14%;top:50%;transform:translateY(-50%);width:20px;height:20px;cursor:pointer}
+  .wheel .btn-next{position:absolute;right:14%;top:50%;transform:translateY(-50%);width:20px;height:20px;cursor:pointer}
+  .wheel .btn-play{position:absolute;bottom:14%;left:50%;transform:translateX(-50%);width:20px;height:20px;cursor:pointer}
+  .wheel .tiny{font-size:15px;font-weight: bold;color:rgba(255,255,255,.75)}
+  .wheel .btn-prev::before,.wheel .btn-prev::after{content:"";display:inline-block;border-style:solid;border-width:5px 6px 5px 0;border-color:transparent #d9d9d9 transparent transparent;margin-right:1px}
+  .wheel .btn-prev::after{margin-right:0}
+  .wheel .btn-next::before,.wheel .btn-next::after{content:"";display:inline-block;border-style:solid;border-width:5px 0 5px 6px;border-color:transparent transparent transparent #d9d9d9;margin-left:1px}
+  .wheel .btn-next::before{margin-left:0}
+  .wheel .btn-play::before,.wheel .btn-play::after{content:"";display:inline-block;vertical-align:middle}
+  .wheel .btn-play::before{border-style:solid;border-width:6px 0 6px 9px;border-color:transparent transparent transparent #d9d9d9;margin-right:3px}
+  .wheel .btn-play::after{width:3px;height:10px;background:#d9d9d9;box-shadow:4px 0 0 #d9d9d9}
   .photoModal{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);z-index:60;opacity:0;pointer-events:none;transition:opacity .28s ease}
   .photoModal.open{opacity:1;pointer-events:auto}
   .photoModal .photoFrame{width:92%;height:82%;max-width:760px;max-height:520px;border-radius:12px;overflow:hidden;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
@@ -108,15 +99,13 @@
   .photoModal .thumbs{height:70px;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.04));display:flex;gap:8px;padding:8px;overflow:auto}
   .photoModal .thumbs img{height:54px;border-radius:6px;cursor:pointer;opacity:.9;border:2px solid transparent}
   .photoModal .thumbs img.active{border-color:#2aa6ff;opacity:1}
-  .photoModal .closeBtn{position:absolute;right:8px;top:8px;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.03);cursor:pointer}
-  .photoModal .navBtn{position:absolute;top:50%;transform:translateY(-50%);padding:8px;border-radius:8px;background:rgba(255,255,255,.03);cursor:pointer}
-  .photoModal .navPrev{left:8px}
-  .photoModal .navNext{right:8px}
-
-  /* pointer for interactive */
+  .photoModal .closeBtn,
+  .photoModal .navBtn {position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(30,30,30,0.65);backdrop-filter:blur(6px);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:all 0.25s ease;box-shadow:0 4px 12px rgba(0,0,0,0.4);z-index:10;}
+  .photoModal .closeBtn:hover, .photoModal .navBtn:hover { background:rgba(255,255,255,0.9);color:#111;transform:scale(1.1);}
+  .photoModal .closeBtn {top:20px;right:20px;font-size:20px;}
+  .photoModal .navBtn.navPrev {left:20px;top:50%;transform:translateY(-50%); font-size: 40px;}
+  .photoModal .navBtn.navNext { right:20px;top:50%;transform:translateY(-50%);font-size: 40px;}
   button, .menu li, .track, .galleryGrid img, .wheel .center, .wheel .btn-menu, .wheel .btn-prev, .wheel .btn-next, .wheel .btn-play, .socials a{cursor:pointer}
-
-  /* scrollbars style (webkit) - apple-like thin translucent */
   .rightPane::-webkit-scrollbar, .menu::-webkit-scrollbar, .page::-webkit-scrollbar, .photoModal .thumbs::-webkit-scrollbar {height:8px;width:8px}
   .rightPane::-webkit-scrollbar-thumb, .menu::-webkit-scrollbar-thumb, .page::-webkit-scrollbar-thumb, .photoModal .thumbs::-webkit-scrollbar-thumb {
     background: rgba(255,255,255,.08); border-radius:8px;
@@ -124,27 +113,13 @@
   .rightPane::-webkit-scrollbar-track, .menu::-webkit-scrollbar-track, .page::-webkit-scrollbar-track, .photoModal .thumbs::-webkit-scrollbar-track {
     background: transparent;
   }
-  /* firefox scrollbar */
   .rightPane, .menu, .page { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.08) transparent; }
   .no-transition * {
     transition: none !important;
-   }
+  }
+  #playingArt {width: 60%;max-width: 320px;aspect-ratio: 1 / 1;background: rgba(255,255,255,.05);object-fit: cover;border-radius: 12px; display: block;}
 
-   /* Asegura que la carátula tenga tamaño inicial aunque no haya cargado la imagen */
-    #playingArt {
-    width: 60%;
-    max-width: 320px;
-    aspect-ratio: 1 / 1;   /* cuadrado fijo */
-    background: rgba(255,255,255,.05); /* placeholder gris */
-    object-fit: cover;
-    border-radius: 12px;
-    display: block;
-    }
-
-    /* Previene que el bloque se colapse antes de que la imagen cargue */
-    #nowPlaying {
-    min-height: 280px;
-    }
+  #nowPlaying { min-height: 280px;}
 
  
 </style>
@@ -154,7 +129,11 @@
     <div class="screen" id="screen">
       <div class="header">
         <div class="title" id="headerTitle">9:41 AM • Music</div>
-        <div class="icons">5G • ░ ░ ░</div>
+        <!-- Reemplazado texto fijo por iconos reales de señal y batería (manteniendo contenido y estilo) -->
+        <div class="icons">
+          <div class="signal" id="signalIcon"><span class="bar1"></span><span class="bar2"></span><span class="bar3"></span><span class="bar4"></span></div>
+          <div class="battery" id="batteryWrap"><div class="battery-level" id="batteryLevel"></div></div>
+        </div>
       </div>
 
       <div class="content" id="content">
@@ -165,7 +144,14 @@
           <div class="nowInfo" aria-live="polite">
             <div class="title" id="nowTitle">Nombre del Tema</div>
             <div class="artist" id="nowArtist">Nombre del Artista</div>
-            <div class="bigProgress" aria-hidden="true"><div class="bar" id="bigBar" style="width:0%"></div></div>
+            <div class="timeRowSmall">
+              <div id="leftTimeCurrent">0:00</div>
+              <div id="leftTimeTotal">0:00</div>
+            </div>
+            <div class="bigProgress">
+              <div class="bar" id="bigBar" style="width:0%"></div>
+            </div>
+            <!-- --------------------------------------------------------------- -->
           </div>
         </div>
 
@@ -219,13 +205,13 @@
     <div class="controls" aria-hidden="false">
       <div class="wheel" id="wheel" role="group" aria-label="Rueda de control">
         <button class="btn-menu tiny" id="btn-menu" aria-pressed="false">MENU</button>
-        <button class="btn-prev tiny" id="btn-prev" aria-label="Anterior">◂◂</button>
-        <button class="btn-next tiny" id="btn-next" aria-label="Siguiente">▸▸</button>
+        <button class="btn-prev tiny" id="btn-prev" aria-label="Anterior"></button>
+        <button class="btn-next tiny" id="btn-next" aria-label="Siguiente"></button>
         <button class="center" id="btn-select" aria-pressed="false">OK</button>
-        <button class="btn-play tiny" id="btn-play" aria-pressed="false">⏯</button>
+        <button class="btn-play tiny" id="btn-play" aria-pressed="false"></button>
       </div>
     </div>
-  </div>
+
 
   <!-- Photo modal INSIDE ipod screen -->
   <div class="photoModal" id="photoModal" aria-hidden="true" role="dialog" aria-label="Foto ampliada">
@@ -271,6 +257,9 @@ const artistAvatar = document.getElementById('artistAvatar');
 const nowTitle = document.getElementById('nowTitle');
 const nowArtist = document.getElementById('nowArtist');
 const bigBar = document.getElementById('bigBar');
+
+const leftTimeCurrent = document.getElementById('leftTimeCurrent');
+const leftTimeTotal = document.getElementById('leftTimeTotal');
 
 const menuList = document.getElementById('menuList');
 const pages = {
@@ -332,7 +321,13 @@ function scrollActivePage(steps, direction){
   const active = pages[currentPageId];
   if(!active) return;
   const amount = 80 * steps * direction;
-  active.scrollBy({top: amount, behavior: 'smooth'});
+
+  // clamp final scrollTop to avoid overscroll bounce
+  const maxScroll = active.scrollHeight - active.clientHeight;
+  const desired = active.scrollTop + amount;
+  const clamped = Math.max(0, Math.min(maxScroll, desired));
+  // use smooth if available
+  active.scrollTo({top: clamped, behavior: 'smooth'});
 }
 
 /* ========== Inicialización UI ========== */
@@ -685,7 +680,10 @@ function cleanupCurrentMSE(){
 }
 
 /* player events */
-player.addEventListener('loadedmetadata', ()=> { if(timeTotal) timeTotal.textContent = formatTime(player.duration || 0); });
+player.addEventListener('loadedmetadata', ()=> { 
+  if(timeTotal) timeTotal.textContent = formatTime(player.duration || 0);
+  if(leftTimeTotal) leftTimeTotal.textContent = formatTime(player.duration || 0);
+});
 player.addEventListener('timeupdate', ()=> {
   if(player.duration && !isNaN(player.duration)){
     const pct = Math.max(0, Math.min(100, (player.currentTime / player.duration) * 100));
@@ -693,6 +691,10 @@ player.addEventListener('timeupdate', ()=> {
     if(bigBar) bigBar.style.width = pct + '%';
     if(timeCurrent) timeCurrent.textContent = formatTime(player.currentTime);
     if(timeTotal) timeTotal.textContent = formatTime(player.duration);
+    // -------------- AÑADIDO: actualizar tiempos en la leftPane --------------
+    if(leftTimeCurrent) leftTimeCurrent.textContent = formatTime(player.currentTime);
+    if(leftTimeTotal) leftTimeTotal.textContent = formatTime(player.duration);
+    // -----------------------------------------------------------------------
   }
 });
 player.addEventListener('ended', ()=> {
@@ -753,15 +755,26 @@ function angleFromEvent(e){
 }
 
 function step(delta){
+  // clamp large deltas that sometimes happen on mobile
+  if(delta > 60) delta = 60;
+  if(delta < -60) delta = -60;
+
   accumulator += delta;
+
+  // keep accumulator bounded to avoid runaway values
+  const maxAccum = THRESH * 4;
+  if(accumulator > maxAccum) accumulator = maxAccum;
+  if(accumulator < -maxAccum) accumulator = -maxAccum;
+
   if(Math.abs(accumulator) >= THRESH){
     const steps = Math.floor(Math.abs(accumulator) / THRESH);
     const dir = accumulator > 0 ? 1 : -1; // 1 => clockwise (down), -1 => ccw (up)
-    accumulator = 0;
+    // keep remainder instead of zeroing to avoid jumpy behavior
+    accumulator = accumulator - dir * steps * THRESH;
 
     // Behavior per context
     if(!inPage){
-      // menu navigation
+      // menu navigation with wheel rotation -- unchanged behavior
       currentMenuIndex = (currentMenuIndex + dir * steps + DATA.menu.length) % DATA.menu.length;
       renderMenu();
     } else {
@@ -772,7 +785,7 @@ function step(delta){
         modalImg.src = DATA.gallery[currentPhotoIndex];
         highlightActiveThumb();
       } else {
-        // scroll the active page
+        // scroll the active page (clamped inside helper)
         scrollActivePage(steps, dir);
       }
     }
@@ -795,6 +808,9 @@ wheel.addEventListener('pointermove', (e)=>{
   if(delta > 180) delta -= 360;
   if(delta < -180) delta += 360;
   lastAngle = a;
+  // guard against extreme deltas on mobile
+  if(delta > 60) delta = 60;
+  if(delta < -60) delta = -60;
   step(delta);
 });
 wheel.addEventListener('pointerup', (e)=>{
@@ -813,6 +829,9 @@ wheel.addEventListener('touchmove', (e)=>{
   if(delta > 180) delta -= 360;
   if(delta < -180) delta += 360;
   lastAngle = a;
+  // guard against extreme deltas on mobile browsers
+  if(delta > 60) delta = 60;
+  if(delta < -60) delta = -60;
   step(delta);
   e.preventDefault();
 }, {passive:false});
@@ -838,9 +857,12 @@ document.getElementById('btn-menu').addEventListener('click', ()=>{
   if(inPage) showPage(null);
   else { currentMenuIndex = 0; renderMenu(); }
 });
+/* --------------- MODIFICADO: btn-prev / btn-next cuando estamos en el menu principal saltan pistas --------------- */
 document.getElementById('btn-prev').addEventListener('click', ()=>{
   if(!inPage){
-    currentMenuIndex = (currentMenuIndex - 1 + DATA.menu.length) % DATA.menu.length; renderMenu();
+    // en menu principal -> cambiar pista (la rueda sigue navegando el menu)
+    const prev = (currentTrackIndex - 1 + DATA.tracks.length) % DATA.tracks.length;
+    playTrack(prev);
   } else if(currentPageId === 'music'){
     const prev = (currentTrackIndex - 1 + DATA.tracks.length) % DATA.tracks.length; playTrack(prev);
   } else if(currentPageId === 'photos'){
@@ -852,7 +874,9 @@ document.getElementById('btn-prev').addEventListener('click', ()=>{
 });
 document.getElementById('btn-next').addEventListener('click', ()=>{
   if(!inPage){
-    currentMenuIndex = (currentMenuIndex + 1) % DATA.menu.length; renderMenu();
+    // en menu principal -> cambiar pista (la rueda sigue navegando el menu)
+    const next = (currentTrackIndex + 1) % DATA.tracks.length;
+    playTrack(next);
   } else if(currentPageId === 'music'){
     const next = (currentTrackIndex + 1) % DATA.tracks.length; playTrack(next);
   } else if(currentPageId === 'photos'){
@@ -861,6 +885,7 @@ document.getElementById('btn-next').addEventListener('click', ()=>{
     if(currentPageId) pages[currentPageId].scrollBy({top:80, behavior:'smooth'});
   }
 });
+/* ------------------------------------------------------------------------------------------------------------------ */
 document.getElementById('btn-play').addEventListener('click', ()=> safePlayToggle());
 
 /* ========== Keyboard support & accessibility ========== */
@@ -877,6 +902,50 @@ live.setAttribute('aria-live','polite'); live.style.position='absolute'; live.st
 document.body.appendChild(live);
 const mo = new MutationObserver(()=> live.textContent = DATA.menu[currentMenuIndex].label + ' seleccionado');
 mo.observe(menuList,{childList:true,subtree:true});
+
+/* ========== Swipe on pages to reveal leftPane (mobile) ========== */
+/*
+  - When in a page (inPage===true), allow horizontal swipe right on the rightPane/pages to show leftPane (reproduction).
+  - This is intentionally lightweight: detect horizontal delta on touch/pointer.
+*/
+(function enablePageSwipeToLeft(){
+  let startX = null, startY = null, trackingSwipe = false;
+  const threshold = 50; // px to consider swipe
+  function onStart(e){
+    if(!inPage) return;
+    const ev = (e.touches && e.touches[0]) ? e.touches[0] : e;
+    startX = ev.clientX;
+    startY = ev.clientY;
+    trackingSwipe = true;
+  }
+  function onMove(e){
+    if(!trackingSwipe) return;
+    // nothing here; we handle on end
+  }
+  function onEnd(e){
+    if(!trackingSwipe) return;
+    const ev = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : e;
+    const dx = ev.clientX - startX;
+    const dy = ev.clientY - startY;
+    // ignore mostly vertical gestures
+    if(Math.abs(dx) > Math.abs(dy) && dx > threshold){
+      // swipe right detected -> show left pane (simulate MENU)
+      showPage(null);
+    }
+    startX = null; startY = null; trackingSwipe = false;
+  }
+
+  // attach to each page so that swipe inside pages works
+  Object.values(pages).forEach(p => {
+    p.addEventListener('touchstart', onStart, {passive:true});
+    p.addEventListener('touchmove', onMove, {passive:true});
+    p.addEventListener('touchend', onEnd, {passive:true});
+
+    // pointer fallback
+    p.addEventListener('pointerdown', (ev)=> { if(ev.pointerType === 'touch') onStart(ev); }, {passive:true});
+    p.addEventListener('pointerup', (ev)=> { if(ev.pointerType === 'touch') onEnd(ev); }, {passive:true});
+  });
+})();
 
 /* ========== Initialize ========== */
 function init(){
@@ -902,6 +971,123 @@ init();
 
 /* prevent dragging images on desktop */
 document.addEventListener('dragstart', (e)=>{ if(e.target.tagName === 'IMG') e.preventDefault(); });
+
+// --- Swipe horizontal para volver al menú ---
+const content = document.getElementById("content");
+let startX = 0;
+
+content.addEventListener("touchstart", (e) => {
+  startX = e.touches[0].clientX;
+}, { passive: true });
+
+content.addEventListener("touchend", (e) => {
+  let endX = e.changedTouches[0].clientX;
+  let diffX = endX - startX;
+
+  // si estás en una página y haces swipe a la derecha
+  if (diffX > 50 && inPage) {
+    const activePage = document.querySelector(".page.active");
+    if (activePage) {
+      activePage.classList.remove("active");
+      document.getElementById("menuList").style.display = "block";
+      inPage = false;
+    }
+  }
+
+  // si no hay página activa y haces swipe a la izquierda/derecha
+  else if (Math.abs(diffX) > 50 && !inPage) {
+    if (diffX > 0) {
+      // swipe derecha → mostrar sección izquierda (reproducción)
+      document.getElementById("leftPane").classList.remove("hidden");
+      document.getElementById("rightPane").classList.remove("full");
+    } else {
+      // swipe izquierda → mostrar sección derecha (menú/páginas)
+      document.getElementById("leftPane").classList.add("hidden");
+      document.getElementById("rightPane").classList.add("full");
+    }
+  }
+}, { passive: true });
+
+/* ========== STATUS ICONS (battery + signal) runtime updater
+   - Minimal, graceful: uses navigator.getBattery and navigator.connection when available.
+   - If unavailable, shows sensible fallbacks (static or simulated).
+   - DOES NOT modify any other app logic.
+*/
+(function initStatusIcons(){
+  const battLevelEl = document.getElementById('batteryLevel');
+  const batteryWrap = document.getElementById('batteryWrap');
+  const signalWrap = document.getElementById('signalIcon');
+
+  function setBatteryLevel(p){
+    const clamped = Math.max(0, Math.min(1, p));
+    battLevelEl.style.width = (clamped*100) + '%';
+    // color thresholds similar to iOS: green/yellow/red
+    let color = '#4caf50'; // verde por defecto
+    if(clamped <= 0.15) color = '#f44336'; // rojo
+    else if(clamped <= 0.35) color = '#ffeb3b'; // amarillo
+    battLevelEl.style.background = color;
+    batteryWrap.classList.toggle('low', clamped <= 0.15);
+  }
+
+  // --- Simulación de ciclo descarga/carga ---
+  let batteryLevel = 1.0; // 100%
+  let discharging = true;
+
+  function simulateBattery(){
+    if(discharging){
+      batteryLevel -= 0.05; // baja 5%
+      if(batteryLevel <= 0){
+        batteryLevel = 0;
+        discharging = false; // empieza a cargar
+      }
+    } else {
+      batteryLevel += 0.05; // sube 5%
+      if(batteryLevel >= 1){
+        batteryLevel = 1;
+        discharging = true; // vuelve a descargar
+      }
+    }
+    setBatteryLevel(batteryLevel);
+  }
+
+  // inicializa al 100%
+  setBatteryLevel(batteryLevel);
+  // cada minuto cambia
+  setInterval(simulateBattery, 60000);
+
+  // --- Signal (igual que tenías) ---
+  function renderSignal(effectiveType){
+    const map = { 'slow-2g':1, '2g':1, '3g':2, '4g':4, 'wifi':4, undefined:3 };
+    const bars = map[effectiveType] ?? 3;
+    const spans = signalWrap.querySelectorAll('span');
+    spans.forEach((s, i) => {
+      if(i < bars) s.classList.add('active'); else s.classList.remove('active');
+    });
+  }
+
+  if(navigator.connection && navigator.connection.effectiveType){
+    renderSignal(navigator.connection.effectiveType);
+    try{ navigator.connection.addEventListener('change', ()=> renderSignal(navigator.connection.effectiveType)); }catch(e){}
+  } else {
+    renderSignal('4g');
+  }
+})();
+
+/* ========== Clock (real system time) ========== */
+function updateClock() {
+  const now = new Date();
+  let hours = now.getHours();
+  let minutes = now.getMinutes().toString().padStart(2, "0");
+  let ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const timeString = `${hours}:${minutes} ${ampm} • Music`;
+  document.getElementById("headerTitle").textContent = timeString;
+}
+
+updateClock();
+setInterval(updateClock, 60000);
+
 
 </script>
 </body>
