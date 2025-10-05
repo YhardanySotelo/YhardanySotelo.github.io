@@ -120,7 +120,9 @@ function renderMenu(){
 
 /* muestra/oculta páginas */
 function showPage(id){
-  window.Game.stop(); 
+  if(window.Game && window.Game.running){
+         window.Game.stop();
+  }
   document.getElementById("page-games").style.display = "none";
   const rightPane = document.getElementById('rightPane');
 
@@ -713,4 +715,5 @@ window.addEventListener('visibilitychange', ()=> {
 });
 
 /* ===== Botón físico OK también controla juego (ya definido arriba) ===== */
+
 /* Fin del script */
