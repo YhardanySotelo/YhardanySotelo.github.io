@@ -1,0 +1,444 @@
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  height:100%;
+  background:#000;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+  color:#fff;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+
+/* === iPod metálico plateado oscuro real === */
+.ipod-wrap{
+  width:420px;
+  max-width:94vw;
+  margin:20px auto;
+  padding:16px;
+  background:linear-gradient(150deg,#b2b3b4 0%,#d1d2d3 30%,#a7a8a9 70%,#8f9091 100%);
+  border-radius:28px;
+  box-shadow:
+    0 25px 55px rgba(0,0,0,.75),
+    inset 0 1px 3px rgba(255,255,255,0.4),
+    inset 0 -3px 6px rgba(0,0,0,0.25);
+  border:1px solid rgba(255,255,255,0.1);
+  position:relative;
+  overflow:hidden;
+}
+
+/* Sutil brillo curvado del aluminio */
+.ipod-wrap::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:linear-gradient(160deg,rgba(255,255,255,0.25) 0%,rgba(255,255,255,0) 70%);
+  pointer-events:none;
+}
+.ipod-wrap::after{
+  content:"";
+  position:absolute;
+  top:-20%;
+  left:-30%;
+  width:160%;
+  height:80%;
+  background:radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0) 75%);
+  transform:rotate(-8deg);
+  opacity:.85;
+  border-radius:50%;
+  pointer-events:none;
+  mix-blend-mode:soft-light;
+}
+
+/* === Pantalla === */
+.screen {
+  height: 300px;
+  background: radial-gradient(circle at 50% 45%, #000 0%, #020202 90%);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.25),
+    inset 0 -2px 3px rgba(0,0,0,0.35),
+    0 0 2px rgba(255,255,255,0.1);
+}
+
+/* Bisel metálico sutil alrededor de la pantalla */
+.screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 2px solid rgba(255,255,255,0.05);
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,0.05),
+    inset 0 -2px 6px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+
+/* Reflejo diagonal sobre el cristal */
+.screen::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(150deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 20%, rgba(255,255,255,0) 40%);
+  border-radius: 12px;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  opacity: 0.4;
+}
+
+/* === Header === */
+.header{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;font-weight:600;font-size:13px;color:#e6e6e6;z-index:3}
+.header .title{font-weight:700}
+.header .icons{display:flex;align-items:center;gap:10px;color:#cfdde6}
+
+/* === Señal === */
+.signal{display:flex;align-items:flex-end;gap:3px;height:12px}
+.signal span{width:3px;border-radius:2px;background:rgba(255,255,255,0.22);transition:background .18s,opacity .18s}
+.signal span.bar1{height:5px}
+.signal span.bar2{height:7px}
+.signal span.bar3{height:9px}
+.signal span.bar4{height:11px}
+.signal span.active{background:#cfdde6;opacity:1}
+
+/* === Batería === */
+.battery{position:relative;width:24px;height:12px;border:1px solid #cfdde6;border-radius:2px;overflow:hidden}
+.battery::after{content:"";position:absolute;top:3px;right:-3px;width:2px;height:6px;background:#cfdde6;border-radius:1px}
+.battery-level{height:100%;width:100%;background:#4caf50;border-radius:1px;transition:width 1s ease, background 1s ease;}
+.battery.charging .battery-level{animation:batt-pulse 1s infinite}
+@keyframes batt-pulse{0%{opacity:.85}50%{opacity:1}100%{opacity:.85}}
+
+/* === Contenido === */
+.content{position:relative;height:calc(100% - 42px);display:flex;background:linear-gradient(180deg,#061220 0%, #0b1720 100%)}
+.leftPane{
+  width:56%;min-width:140px;padding:14px;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  background-size:cover;background-position:center;position:relative;transition:width .36s cubic-bezier(.2,.9,.3,1),opacity .36s;
+  border-right:1px solid rgba(255,255,255,.02);
+  overflow:hidden;
+}
+.leftPane.hidden{width:5%;opacity:.38;padding:8px 6px;min-width:54px}
+.leftOverlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.75));z-index:1}
+.artistAvatar{width:110px;height:110px;border-radius:10px;object-fit:cover;z-index:2;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+.nowInfo{width:92%;position:relative;z-index:2;margin-top:12px;text-align:center}
+.nowInfo .title{font-weight:800;font-size:16px;color:#fff}
+.nowInfo .artist{font-size:12px;color:#d7e6ef;margin-top:4px}
+.bigProgress{width:92%;height:8px;background:rgba(255,255,255,.06);border-radius:10px;margin-top:10px;overflow:hidden;z-index:2}
+.bigProgress .bar{height:100%;width:0%;background:linear-gradient(90deg,#6aff80,#03742d);transition:width .12s linear}
+.rightPane{padding:5px;display:flex;flex-direction:column;gap:8px;justify-content:flex-start;align-items:flex-start;overflow:auto;transition:width .36s cubic-bezier(.2,.9,.3,1)}
+.rightPane.full{width:95%}
+.menu{list-style:none;padding:8px 6px;width:100%;color:#fff;overflow:auto}
+.menu li{padding:10px 12px;border-radius:8px;margin-bottom:8px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.04));
+  display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:transform .12s,background .12s;outline:none}
+.menu li:hover{transform:translateX(4px)}
+.menu li.selected{background: linear-gradient(180deg, #e1dd90, #333232);color:#012;font-weight:700}
+.menu li .subtitle{font-size:12px;color:rgba(255,255,255,.7)}
+.page{display:none;padding:6px;height:100%;overflow:auto; -webkit-overflow-scrolling: touch;}
+.page.active{display:block;animation:fadeIn .24s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.avatar{width:100%;height:160px;border-radius:10px;object-fit:cover;margin-bottom:12px}
+.bio h3{margin-bottom:8px}
+.bio p{color:#e9eef2;line-height:1.5;font-size:14px}
+.nowPlaying{display:flex;flex-direction:column;align-items:center;gap:12px;padding:6px;height:100%;justify-content:flex-start}
+.nowPlaying .art{width:60%;max-width:320px;height:auto;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,.7)}
+.nowPlaying .meta{width:90%;text-align:center}
+.nowPlaying .meta .song{font-weight:800;font-size:18px}
+.nowPlaying .meta .artist{font-size:13px;color:#cfdde6;margin-top:6px}
+.timeRow{width:90%;display:flex;justify-content:space-between;font-size:12px;color:#bfcfd6;margin-top:6px}
+.timeRowSmall{width:92%;display:flex;justify-content:space-between;font-size:11px;color:#bfcfd6;margin:6px 0 4px 0;z-index:2;}
+.tracks{width:100%;margin-top:8px}
+.track{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:rgba(255,255,255,.03);margin-bottom:8px;cursor:pointer}
+.track:hover{background:rgba(255,255,255,.05)}
+.track button{background:linear-gradient(180deg,#1db954,#17a44a);border:none;padding:6px 10px;border-radius:6px;color:#022;font-weight:700;cursor:pointer}
+.galleryGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.galleryGrid img{width:100%;height:110px;object-fit:cover;border-radius:8px;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.5);transition:transform .25s}
+.galleryGrid img:hover{transform:scale(1.02)}
+.socials{display:flex;flex-direction:column;gap:8px}
+.socials a{padding:10px;border-radius:8px;background:rgba(255,255,255,.03);color:#fff;display:flex;align-items:center;gap:8px;cursor:pointer}
+
+/* === Rueda blanca hueso mejorada === */
+.controls{display:flex;justify-content:center;padding:14px}
+.wheel{
+  position: relative;
+  width: 240px;
+  height: 240px;
+  background: #f3f3f0;
+  border-radius: 50%;
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.45),
+    inset 0 1px 2px rgba(255,255,255,0.5),
+    inset 0 -2px 4px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wheel button {
+  position: absolute;
+  background: none;
+  border: none;
+  color: #777;
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
+  transition: transform .1s ease, color .15s ease;
+}
+.wheel button:active { transform: scale(.95); color: #333; }
+
+.wheel .btn-menu{top:8%;left:50%;transform:translateX(-50%);font-size:13px}
+.wheel .center{
+  width:96px;height:96px;border-radius:50%;
+  background:#a6a7a8;
+  box-shadow:inset 0 1px 2px rgba(255,255,255,0.5),inset 0 -2px 4px rgba(0,0,0,0.25);
+}
+
+.wheel .btn-prev,
+.wheel .btn-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #777;
+}
+
+/* ubicación */
+.wheel .btn-prev { left: 5%; }
+.wheel .btn-next { right: 5%; }
+
+/* barra vertical (elemento <span class="bar">) */
+.wheel .btn-prev .bar,
+.wheel .btn-next .bar {
+  display: inline-block;
+  width: 2px;
+  height: 12px;
+  background: #777;
+  border-radius: 1px;
+}
+
+/* triángulos (flechas) como spans — izquierdo y derecho */
+.wheel .tri {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+/* triángulo apuntando a la izquierda (◀) */
+.wheel .tri-left {
+  border-width: 6px 7px 6px 0;
+  border-color: transparent #777 transparent transparent;
+  margin: 0 1px;
+}
+
+/* triángulo apuntando a la derecha (▶) */
+.wheel .tri-right {
+  border-width: 6px 0 6px 7px;
+  border-color: transparent transparent transparent #777;
+  margin: 0 1px;
+}
+
+/* Orden y separación exacta:
+   - Prev: barra (left) + tri + tri
+   - Next: tri + tri + barra (right)
+   ya vienen así por el HTML que te pedí.
+*/
+
+/* Visual tweak para que no queden pegados*/
+.wheel .btn-prev .tri-left + .tri-left { margin-left: 0; margin-right: 2px; }
+.wheel .btn-next .tri-right + .tri-right { margin-right: 0; margin-left: 2px; }
+
+/* interacción: hover / active */
+.wheel .btn-prev:hover .bar,
+.wheel .btn-next:hover .bar,
+.wheel .btn-prev:hover .tri,
+.wheel .btn-next:hover .tri {
+  background: #444; /* tint más oscuro en hover (triángulos usan border-color, cambiamos con filter) */
+  filter: brightness(0.9);
+}
+
+/* active (presionado): leve hundimiento */
+.wheel .btn-prev:active,
+.wheel .btn-next:active {
+  transform: translateY(-50%) scale(.95);
+}
+
+/* Play/Pause (CSS puro) */
+.wheel .btn-play{
+  bottom:8%;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;justify-content:center;
+}
+.wheel .btn-play::before{
+  content:"";
+  border-style:solid;
+  border-width:6px 0 6px 9px;
+  border-color:transparent transparent transparent #777;
+  display:inline-block;
+  margin-right:3px;
+}
+.wheel .btn-play::after{
+  content:"";
+  display:inline-block;
+  width:3px;height:10px;background:#777;
+  box-shadow:4px 0 0 #777;
+}
+
+/* === Modal fotos y juegos === */
+.photoModal{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);z-index:60;opacity:0;pointer-events:none;transition:opacity .28s ease}
+.photoModal.open{opacity:1;pointer-events:auto}
+.photoModal .photoFrame{width:92%;height:82%;max-width:760px;max-height:520px;border-radius:12px;overflow:hidden;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.photoModal img{width:100%;height:100%;object-fit:contain;background:#000}
+.photoModal .thumbs{height:70px;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.04));display:flex;gap:8px;padding:8px;overflow:auto}
+.photoModal .thumbs img{height:54px;border-radius:6px;cursor:pointer;opacity:.9;border:2px solid transparent}
+.photoModal .thumbs img.active{border-color:#2aa6ff;opacity:1}
+.photoModal .closeBtn,
+.photoModal .navBtn {position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(30,30,30,0.65);backdrop-filter:blur(6px);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:all 0.25s ease;box-shadow:0 4px 12px rgba(0,0,0,0.4);z-index:10;}
+.photoModal .closeBtn:hover, .photoModal .navBtn:hover { background:rgba(255,255,255,0.9);color:#111;transform:scale(1.1); }
+.photoModal .closeBtn {top:20px;right:20px;font-size:20px;}
+.photoModal .navBtn.navPrev {left:20px;top:50%;transform:translateY(-50%); font-size: 40px;}
+.photoModal .navBtn.navNext { right:20px;top:50%;transform:translateY(-50%);font-size: 40px;}
+
+/* HAZ QUE LA CABECERA OCUP EPOCA MENOS Y SUBA */
+.game-hud {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:12px;             /* mantiene texto pequeño */
+  color:#cfe8ff;
+  padding:6px 8px;            /* menos padding que antes */
+  gap:8px;
+  margin-bottom:6px;          /* menos separación con el área del juego */
+}
+
+/* Título a la izquierda con espacio reducido */
+.game-hud .game-title {
+  font-weight:700;
+  font-size:13px;
+  letter-spacing:0.6px;
+  color:#cfe8ff;
+}
+
+/* Hint (texto abajo) */
+.game-hint {
+  font-size:12px;
+  color:#cfe8ff;
+  padding:6px 4px;
+  margin-top:8px;
+}
+
+/* AREA QUE CONTIENE EL CANVAS Y LOS OVERLAYS
+   Controla el alto máximo para que no provoque scroll en la página */
+.game-area {
+  position: relative;         /* referencia para overlays */
+  width: 100%;
+  max-width: 100%;
+  min-height: 170px;        /* reduce el espacio efectivo del juego (ajustable) */
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg,#00101a00, #00000000); /* sutil fondo */
+}
+
+/* CANVAS: se escala visualmente, manteniendo la resolución interna (320x240) */
+.game-area .game-canvas {
+  width: 100%;       /* ocupa ancho disponible */
+  height: auto;      /* mantiene proporción 320x240 */
+  max-height: 260px; /* asegura que la altura no supere y cause scroll */
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(180deg,#031022,#051430);
+}
+
+/* CONTADOR (overlay pequeño en la esquina superior izquierda del canvas) */
+.game-area .game-countdown {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  z-index: 30;
+  font-family: monospace;
+  font-weight:700;
+  font-size:18px;
+  color:#2af1ff;
+  background: rgba(0,0,0,0.35);
+  padding:4px 8px;
+  border-radius:6px;
+  pointer-events:none;
+  display:none; /* visible por JS cuando haya cuenta regresiva */
+}
+
+/* MENSAJE DE GAME OVER centrado sobre el canvas */
+.game-area .game-over {
+  position: absolute;
+  inset: 0;                 /* ocupa el área del wrapper */
+  display: none;            /* visible por JS cuando pierdes */
+  z-index: 40;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+  gap: 12px;
+  background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)); /* leve oscurecimiento */
+  padding: 12px;
+}
+.game-area .game-over h1 {
+  color: #fff;
+  font-size: 36px;
+  letter-spacing: 1px;
+  margin: 0;
+}
+.game-area .game-over .smallBtn {
+  min-width: 110px;
+}
+
+/* captura de overflow: si tu layout antes dejaba scroll, esto reduce la probabilidad */
+.page#page-games {
+  display:none;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+/* Botones HUD más compactos */
+.smallBtn {
+  padding:6px 10px;
+  border-radius:6px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.03);
+  color:#fff;
+}
+
+
+/* === Scroll === */
+.rightPane::-webkit-scrollbar, .menu::-webkit-scrollbar, .page::-webkit-scrollbar, .photoModal .thumbs::-webkit-scrollbar {height:8px;width:8px}
+.rightPane::-webkit-scrollbar-thumb, .menu::-webkit-scrollbar-thumb, .page::-webkit-scrollbar-thumb, .photoModal .thumbs::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.08); border-radius:8px;
+}
+.rightPane::-webkit-scrollbar-track, .menu::-webkit-scrollbar-track, .page::-webkit-scrollbar-track, .photoModal .thumbs::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rightPane, .menu, .page { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.08) transparent; }
+.no-transition * { transition: none !important; }
+#album-art{display:none}
+#playingArt {width: 60%;max-width: 320px;aspect-ratio: 1 / 1;background: rgba(255,255,255,.05);object-fit: cover;border-radius: 12px; display: block;}
+#nowPlaying { min-height: 280px;}
+@media (max-width: 768px) {
+  body {overflow-y:hidden;height:100vh;}
+}
+
+@media (max-width: 480px) {
+  .game-area { max-height: 200px; }
+  .game-area .game-canvas { max-height: 180px; }
+  .game-area .game-over h1 { font-size: 28px; }
+}
