@@ -101,8 +101,7 @@
     user-select: none;
     transition: transform .1s ease, color .15s ease;
   }
-  .wheel button:active { transform: scale(.95); color: #333; }
-
+ 
   .wheel .btn-menu{top:8%;left:50%;transform:translateX(-50%);font-size:13px}
   .wheel .center{
     width:96px;height:96px;border-radius:50%;
@@ -173,20 +172,6 @@
   .wheel .btn-prev .tri-left + .tri-left { margin-left: 0; margin-right: 2px; }
   .wheel .btn-next .tri-right + .tri-right { margin-right: 0; margin-left: 2px; }
 
-  /* interacción: hover / active */
-  .wheel .btn-prev:hover .bar,
-  .wheel .btn-next:hover .bar,
-  .wheel .btn-prev:hover .tri,
-  .wheel .btn-next:hover .tri {
-    background: #444; /* tint más oscuro en hover (triángulos usan border-color, cambiamos con filter) */
-    filter: brightness(0.9);
-  }
-
-  /* active (presionado): leve hundimiento */
-  .wheel .btn-prev:active,
-  .wheel .btn-next:active {
-    transform: translateY(-50%) scale(.95);
-  }
 
   /* Play/Pause (CSS puro) */
   .wheel .btn-play{
@@ -1310,5 +1295,3 @@ window.addEventListener('visibilitychange', ()=> {
 
 </body>
 </html>
-
-
