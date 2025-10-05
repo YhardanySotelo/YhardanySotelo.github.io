@@ -1,200 +1,147 @@
-(function setupSpaceShooterSprites(){
-  const canvas=document.getElementById("gameCanvas");
-  const ctx=canvas.getContext("2d",{alpha:false});
-  const W=320,H=240;canvas.width=W;canvas.height=H;
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>iPod Classic - Rueda funcional + scroll + Juegos</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="ipod-wrap" role="application" aria-label="iPod Portfolio final">
+    <div class="screen" id="screen">
+      <div class="header">
+        <div class="title" id="headerTitle">9:41 AM • Music</div>
+        <div class="icons">
+          <div class="signal" id="signalIcon">
+            <span class="bar1"></span><span class="bar2"></span><span class="bar3"></span><span class="bar4"></span>
+          </div>
+          <div class="battery" id="batteryWrap"><div class="battery-level" id="batteryLevel"></div></div>
+        </div>
+      </div>
 
-  // Cargar sprites
-  const sprites={
-    player:new Image(),
-    enemy1:new Image(),
-    enemy2:new Image(),
-    laser:new Image(),
-    explosion:new Image()
-  };
-  sprites.player.src="assets/player.png";
-  sprites.enemy1.src="assets/enemy1.png";
-  sprites.enemy2.src="assets/enemy2.png";
-  sprites.laser.src="assets/laser.png";
-  sprites.explosion.src="assets/explosion.png";
+      <div class="content" id="content">
+        <!-- LEFT -->
+        <div class="leftPane" id="leftPane">
+          <div class="leftOverlay" aria-hidden="true"></div>
+          <img id="artistAvatar" class="artistAvatar" src="" alt="Artista">
+          <div class="nowInfo" aria-live="polite">
+            <div class="title" id="nowTitle">Nombre del Tema</div>
+            <div class="artist" id="nowArtist">Nombre del Artista</div>
+            <div class="timeRowSmall">
+              <div id="leftTimeCurrent">0:00</div>
+              <div id="leftTimeTotal">0:00</div>
+            </div>
+            <div class="bigProgress">
+              <div class="bar" id="bigBar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
 
-  // Estado
-  let rafId=null,running=false,lastTs=0,score=0;
-  const ship={x:56,y:H/2,w:32,h:32};
-  let enemies=[],bullets=[],explosions=[],stars=[];
+        <!-- RIGHT -->
+        <div class="rightPane" id="rightPane">
+          <ul id="menuList" class="menu" role="menu" aria-label="Menu principal"></ul>
 
-  // Config
-  const enemySpawnRate=10.5,enemyMinSpeed=90,enemyMaxSpeed=160,autoShootRate=2;
-  const maxEnemies=32;
+          <div id="page-bio" class="page" role="document" aria-hidden="true">
+            <h3>Biografía</h3>
+            <img src="img/main.webp" alt="Foto artista" class="avatar">
+            <div class="bio">
+              <p><strong>Sebastián Yepes</strong> — Sebastián Yepes Alzate músico colombiano, nacido en la ciudad de Manizales Departamento de Caldas en el eje cafetero Colombiano, el 10 de junio de 1980. Ex-vocalista de la agrupación Sanalejo.</p>
+            </div>
+          </div>
 
-  // Helpers
-  const rand=(a,b)=>Math.random()*(b-a)+a;
-  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+          <div id="page-music" class="page" role="document" aria-hidden="true">
+            <div class="nowPlaying" id="nowPlaying">
+              <img src="" class="art" id="playingArt" alt="Carátula">
+              <div class="meta">
+                <div class="song" id="playingTitle">Track One</div>
+                <div class="artist" id="playingArtist">Nombre del Artista</div>
+                <div class="timeRow">
+                  <div id="timeCurrent">0:00</div>
+                  <div id="timeTotal">0:00</div>
+                </div>
+                <div class="bigProgress" style="margin-top:8px"><div class="bar" id="mainBar" style="width:0%"></div></div>
+              </div>
+              <div class="tracks" id="tracksList"></div>
+            </div>
+            <audio id="player" preload="metadata"></audio>
+          </div>
 
-  function resetGame(){
-    enemies=[];bullets=[];explosions=[];
-    score=0;ship.y=H/2;
-    initStars();
-    updateScore();
-  }
+          <div id="page-photos" class="page" role="document" aria-hidden="true">
+            <h3>Fotos</h3>
+            <div class="galleryGrid" id="galleryGrid"></div>
+          </div>
 
-  // Fondo estrellas
-  function initStars(){
-    stars.length = 0; // limpiar el array global
-    const numStars = 100; 
-    for(let i=0; i<numStars; i++){
-      stars.push({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        size: Math.random() * 1 + 0.5,      // estrellas más pequeñas (0.5–1.5 px)
-        speed: Math.random() * 50 + 20,     // velocidad distinta (px/s)
-        alpha: Math.random() * 0.3 + 0.2    // menos brillo (0.2–0.5)
-      });
-    }
-  }
+          <div id="page-social" class="page" role="document" aria-hidden="true">
+            <h3>Redes</h3>
+            <div class="socials">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">📸 Instagram</a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">📘 Facebook</a>
+            </div>
+          </div>
 
-  function drawStars(dt){
-    ctx.fillStyle="#000";
-    ctx.fillRect(0,0,W,H);
+         <!-- Página nueva: Juegos -->
+          <div id="page-games" class="page" role="document" aria-hidden="true">
+            <div class="game-hud">
+              <div class="game-title">JUEGOS</div>
+              <div class="game-controls">
+                <button id="gameRestart" class="smallBtn">Reiniciar</button>
+                <button id="gamePause" class="smallBtn">Pausa</button>
+              </div>
+            </div>
 
-    for(let s of stars){
-      ctx.globalAlpha = s.alpha;
-      ctx.fillStyle = '#FFFFFF';
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.size, 0, Math.PI*2);
-      ctx.fill();
+            <!-- Wrapper que contiene canvas + overlays -->
+            <div class="game-area">
+              <div id="gameCountdown" class="game-countdown" aria-hidden="true">3</div>
 
-      // mover la estrella
-      s.x -= s.speed * dt;
-      if(s.x < 0){
-        s.x = W + 2;
-        s.y = Math.random() * H;
-        s.size = Math.random() * 1 + 0.5;
-        s.speed = Math.random() * 50 + 20;
-        s.alpha = Math.random() * 0.3 + 0.2;
-      }
-    }
-    ctx.globalAlpha = 1;
-  }
+              <canvas id="gameCanvas" class="game-canvas" width="320" height="240"></canvas>
 
-  // Naves
-  function drawShip(){ctx.drawImage(sprites.player,ship.x-ship.w/2,ship.y-ship.h/2,ship.w,ship.h);}
-  function spawnEnemy(){
-    if(enemies.length>=maxEnemies) return;
-    const img = Math.random()>0.5 ? sprites.enemy1 : sprites.enemy2;
-    const vx = -rand(enemyMinSpeed, enemyMaxSpeed);
-    const vy = rand(-80, 80); // velocidad vertical aleatoria
-    enemies.push({
-      x: W+30,
-      y: rand(20, H-20),
-      w: 32,
-      h: 32,
-      vx,
-      vy,
-      img
-    });
-  }
+              <div id="gameOver" class="game-over" aria-hidden="true">
+                <h1>PERDISTE</h1>
+                <button class="smallBtn" id="gameOverRestart" onclick="window.Game && window.Game.restart()">Reiniciar</button>
+              </div>
+            </div>
 
-  function drawEnemies(){for(let e of enemies)ctx.drawImage(e.img,e.x-e.w/2,e.y-e.h/2,e.w,e.h);}
+            <div class="game-hint" aria-hidden="true">Usa la rueda para mover la paleta. Pulsa OK para iniciar/pausar.</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  // Balas
-  function shoot(){bullets.push({x:ship.x+16,y:ship.y,vx:220});}
-  function drawBullets(){
-    for(let b of bullets)ctx.drawImage(sprites.laser, b.x-6, b.y-4, 12, 8);
-  }
+    <!-- Wheel -->
+    <div class="controls">
+      <div class="wheel" id="wheel">
+        <button class="btn-menu tiny" id="btn-menu">MENU</button>
+        <button class="btn-prev tiny" id="btn-prev" aria-label="Anterior">
+          <span class="bar"></span>
+          <span class="tri tri-left"></span>
+          <span class="tri tri-left"></span>
+        </button>
 
-  // Explosiones
-  function pushExplosion(x,y){explosions.push({x,y,life:1});}
-  function drawExplosions(dt){
-    for(let i=explosions.length-1;i>=0;i--){
-      const ex=explosions[i];ex.life-=dt*2;
-      if(ex.life<=0){explosions.splice(i,1);continue;}
-      const size=32+(1-ex.life)*32;
-      ctx.globalAlpha=ex.life;
-      ctx.drawImage(sprites.explosion,ex.x-size/2,ex.y-size/2,size,size);
-      ctx.globalAlpha=1;
-    }
-  }
+        <button class="btn-next tiny" id="btn-next" aria-label="Siguiente">
+          <span class="tri tri-right"></span>
+          <span class="tri tri-right"></span>
+          <span class="bar"></span>
+        </button>
 
-  // HUD
-  function updateScore(){const s=document.getElementById("Puntaje");if(s)s.textContent=score;}
+        <button class="center" id="btn-select"></button>
+        <button class="btn-play tiny" id="btn-play"></button>
+      </div>
+    </div>
+  </div>
 
-  // Loop
-  let lastShot=0,spawnAcc=0;
-  function update(dt){
-    bullets.forEach((b,i)=>{b.x+=b.vx*dt;if(b.x>W+20)bullets.splice(i,1);});
-    for(let i=enemies.length-1;i>=0;i--){
-      const e = enemies[i];
-      e.x += e.vx * dt;
-      e.y += e.vy * dt;
+  <!-- Modal de fotos -->
+  <div class="photoModal" id="photoModal">
+    <div class="photoFrame">
+      <button class="closeBtn" id="photoClose">✕</button>
+      <button class="navBtn navPrev" id="photoPrev">◂</button>
+      <button class="navBtn navNext" id="photoNext">▸</button>
+      <img id="modalImg" alt="Foto ampliada">
+      <div class="thumbs" id="photoThumbs"></div>
+    </div>
+  </div>
 
-      if(e.y < 20 || e.y > H-20){
-        e.vy *= -1;
-      }
-      if(e.x < -30) enemies.splice(i,1);
-    }
-
-    // colisión bala-enemigo
-    for(let i=enemies.length-1;i>=0;i--){
-      for(let j=bullets.length-1;j>=0;j--){
-        const e=enemies[i],b=bullets[j];
-        if(Math.abs(e.x-b.x)<16&&Math.abs(e.y-b.y)<16){
-          pushExplosion(e.x,e.y);
-          enemies.splice(i,1);bullets.splice(j,1);
-          score++;updateScore();break;
-        }
-      }
-    }
-
-    // colisión nave-enemigo
-    for(let e of enemies){
-      if(Math.abs(e.x-ship.x)<20&&Math.abs(e.y-ship.y)<20){
-        pushExplosion(ship.x,ship.y);running=false;showGameOver();return;
-      }
-    }
-
-    spawnAcc+=dt;
-    if(spawnAcc>0.15){if(Math.random()<dt*enemySpawnRate)spawnEnemy();spawnAcc=0;}
-
-    lastShot+=dt;
-    if(lastShot>=1/autoShootRate){lastShot=0;shoot();}
-  }
-
-  function render(dt){
-    drawStars(dt);
-    drawBullets();drawEnemies();drawShip();drawExplosions(dt);
-    ctx.fillStyle="cyan";ctx.font="bold 14px monospace";ctx.fillText("PUNTAJE "+score,8,20);
-  }
-
-  function loop(ts){rafId=requestAnimationFrame(loop);
-    if(!lastTs)lastTs=ts;let dt=(ts-lastTs)/1000;lastTs=ts;
-    if(!running){render(dt);return;}
-    update(dt);render(dt);}
-
-  // UI
-  function showGameOver(){document.getElementById("gameOver").style.display="block";}
-  function hideGameOver(){document.getElementById("gameOver").style.display="none";}
-
-  // API pública
-  window.Game={
-    start(){if(running)return;running=true;lastTs=0;hideGameOver();if(!rafId)rafId=requestAnimationFrame(loop);},
-    stop(){running=false;},
-    togglePause(){running=!running;if(running&&!rafId)rafId=requestAnimationFrame(loop);},
-    restart(){resetGame();running=true;lastTs=0;hideGameOver();if(!rafId)rafId=requestAnimationFrame(loop);},
-    handleWheel(d){ship.y+=d*10;ship.y=clamp(ship.y,ship.h/2,H-ship.h/2);},
-    startCountdown(){
-      const el=document.getElementById("gameCountdown");
-      resetGame();hideGameOver();
-      el.style.display="block";
-      let c=3;el.textContent=c;
-      const t=setInterval(()=>{
-        c--;if(c>=1)el.textContent=c;
-        if(c<0){clearInterval(t);el.style.display="none";window.Game.start();}
-      },1000);
-    }
-  };
-
-  document.getElementById("gameRestart").onclick=()=>window.Game.restart();
-  document.getElementById("gamePause").onclick=()=>window.Game.togglePause();
-
-  resetGame();if(!rafId)rafId=requestAnimationFrame(loop);
-})();
+  <!-- Scripts -->
+  <script src="app.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
