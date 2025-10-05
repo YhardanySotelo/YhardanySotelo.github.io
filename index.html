@@ -6,10 +6,10 @@
 <title>iPod Classic - Rueda funcional + scroll + Juegos</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:#000000;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#fff;-webkit-font-smoothing:antialiased}
+  html,body{height:100%;width:100%;margin:0;padding:0;background:#000000;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#fff;-webkit-font-smoothing:antialiased;overflow:hidden!important;position:fixed!important;top:0;left:0;overscroll-behavior:none!important;touch-action:none!important;-webkit-overflow-scrolling:auto!important}
   a{color:inherit;text-decoration:none}
   .ipod-wrap{width:420px;max-width:94vw;margin:20px auto;padding:16px;
-    background:linear-gradient(150deg, #b2b3b4 0%, #d1d2d3 30%, #a7a8a9 70%, #8f9091 100%);;
+    background:linear-gradient(150deg, #b2b3b4 0%, #d1d2d3 30%, #a7a8a9 70%, #8f9091 100%);
     border-radius:28px;box-shadow:0 30px 60px rgba(0,0,0,.6), inset 0 6px 20px rgba(255,255,255,.02);
     border:2px solid rgba(255,255,255,.03)}
   .screen{height:300px;background:#000;border-radius:12px;overflow:hidden;position:relative;
@@ -1282,5 +1282,31 @@ window.addEventListener('visibilitychange', ()=> {
 /* ===== Botón físico OK también controla juego (ya definido arriba) ===== */
 /* Fin del script */
 </script>
+<script>
+  // Evita cualquier desplazamiento táctil o rebote
+  document.addEventListener('touchmove', function (e) {
+    e.preventDefault();
+  }, { passive: false });
+
+  // Previene "pull-to-refresh" en Safari / iOS
+  let startY = 0;
+  document.addEventListener('touchstart', function (e) {
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function (e) {
+    const y = e.touches[0].clientY;
+    if (y > startY && window.scrollY === 0) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // Si el navegador intenta moverse, vuelve al tope
+  window.addEventListener('scroll', function () {
+    window.scrollTo(0, 0);
+  });
+</script>
+
+
 </body>
 </html>
