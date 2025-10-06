@@ -91,6 +91,10 @@
     justify-content: center;
   }
 
+  #wheel {
+   touch-action: none;
+  }
+
   .wheel button {
     position: absolute;
     background: none;
@@ -100,6 +104,7 @@
     font-weight: 600;
     user-select: none;
     transition: transform .1s ease, color .15s ease;
+     pointer-events: auto;
   }
  
   .wheel .btn-menu{top:15%;left:50%;transform:translateX(-50%);font-size:13px}
@@ -823,44 +828,96 @@ function step(delta){
 }
 
 /* eventos de puntero/táctil para la rueda */
-wheel.addEventListener('pointerdown', (e)=>{
-  if(isInsideButton(e.target)) return;
+/* ==== Versión final cross-platform de la rueda ==== */
+let startOnButton = false, gestureMoved = false, startClientX = 0, startClientY = 0;
+const DRAG_THRESHOLD = 6;
+
+wheel.addEventListener('pointerdown', e => {
+  const btn = e.target.closest && e.target.closest('button');
+  startOnButton = !!btn;
   tracking = true;
+  gestureMoved = false;
+  startClientX = e.clientX;
+  startClientY = e.clientY;
   lastAngle = angleFromEvent(e);
-  try{ wheel.setPointerCapture && wheel.setPointerCapture(e.pointerId); }catch(err){}
+
+  // Solo capturar pointer si es táctil o stylus, nunca con mouse
+  if (e.pointerType !== 'mouse') {
+    try { wheel.setPointerCapture(e.pointerId); } catch {}
+  }
 });
-wheel.addEventListener('pointermove', (e)=>{
-  if(!tracking) return;
+
+wheel.addEventListener('pointermove', e => {
+  if (!tracking) return;
+  const dx = e.clientX - startClientX;
+  const dy = e.clientY - startClientY;
+  if (!gestureMoved && Math.hypot(dx, dy) > DRAG_THRESHOLD) gestureMoved = true;
+  if (startOnButton && !gestureMoved) return;
   const a = angleFromEvent(e);
   let delta = a - lastAngle;
-  if(delta > 180) delta -= 360;
-  if(delta < -180) delta += 360;
+  if (delta > 180) delta -= 360;
+  if (delta < -180) delta += 360;
   lastAngle = a;
-  if(delta > 60) delta = 60;
-  if(delta < -60) delta = -60;
-  step(delta);
-});
-wheel.addEventListener('pointerup', (e)=>{
-  tracking=false; lastAngle=null; accumulator=0;
-  try{ wheel.releasePointerCapture && wheel.releasePointerCapture(e.pointerId); }catch(err){}
-});
-wheel.addEventListener('touchstart', (e)=>{
-  if(isInsideButton(e.target)) return;
-  tracking=true; lastAngle = angleFromEvent(e);
-}, {passive:false});
-wheel.addEventListener('touchmove', (e)=>{
-  if(!tracking) return;
-  const a = angleFromEvent(e);
-  let delta = a - lastAngle;
-  if(delta > 180) delta -= 360;
-  if(delta < -180) delta += 360;
-  lastAngle = a;
-  if(delta > 60) delta = 60;
-  if(delta < -60) delta = -60;
-  step(delta);
+  step(Math.max(-60, Math.min(60, delta)));
   e.preventDefault();
-}, {passive:false});
-wheel.addEventListener('touchend', ()=>{ tracking=false; lastAngle=null; accumulator=0; });
+});
+
+wheel.addEventListener('pointerup', e => {
+  // Si no hubo movimiento y empezó sobre un botón → permitir click normal
+  if (startOnButton && !gestureMoved) {
+    tracking = false;
+    startOnButton = false;
+    gestureMoved = false;
+    return;
+  }
+
+  tracking = false;
+  lastAngle = null;
+  accumulator = 0;
+  startOnButton = false;
+  gestureMoved = false;
+
+  // Liberar pointer si fue táctil
+  if (e.pointerType !== 'mouse') {
+    try { wheel.releasePointerCapture(e.pointerId); } catch {}
+  }
+});
+
+/* Touch fallback (mismo comportamiento, necesario para navegadores antiguos) */
+wheel.addEventListener('touchstart', e => {
+  const btn = e.target.closest && e.target.closest('button');
+  startOnButton = !!btn;
+  tracking = true;
+  gestureMoved = false;
+  startClientX = e.touches[0].clientX;
+  startClientY = e.touches[0].clientY;
+  lastAngle = angleFromEvent(e);
+});
+
+wheel.addEventListener('touchmove', e => {
+  if (!tracking) return;
+  const dx = e.touches[0].clientX - startClientX;
+  const dy = e.touches[0].clientY - startClientY;
+  if (!gestureMoved && Math.hypot(dx, dy) > DRAG_THRESHOLD) gestureMoved = true;
+  if (startOnButton && !gestureMoved) return;
+  const a = angleFromEvent(e);
+  let delta = a - lastAngle;
+  if (delta > 180) delta -= 360;
+  if (delta < -180) delta += 360;
+  lastAngle = a;
+  step(Math.max(-60, Math.min(60, delta)));
+  e.preventDefault();
+});
+
+wheel.addEventListener('touchend', e => {
+  tracking = false;
+  lastAngle = null;
+  accumulator = 0;
+  startOnButton = false;
+  gestureMoved = false;
+});
+/* ==== Fin bloque ==== */
+
 
 /* ===== Botones de la rueda ===== */
 function safePlayToggle(){
@@ -1293,7 +1350,5 @@ window.addEventListener('visibilitychange', ()=> {
     window.scrollTo(0, 0);
   });
 </script>
-
-
 </body>
 </html>
