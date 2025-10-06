@@ -811,8 +811,11 @@ function step(delta){
     if(inPage && currentPageId === 'games' && window.Game){
       window.Game.handleWheel(dir * steps); // control del juego por la rueda
     } else if(!inPage){
-      currentMenuIndex = (currentMenuIndex + dir * steps + DATA.menu.length) % DATA.menu.length;
-      renderMenu();
+      const newIndex = currentMenuIndex + dir * steps;
+      if (newIndex >= 0 && newIndex < DATA.menu.length) {
+        currentMenuIndex = newIndex;
+        renderMenu();
+      }
     } else {
       if(currentPageId === 'photos' && photoModal.classList.contains('open')){
         currentPhotoIndex = (currentPhotoIndex + dir * steps + DATA.gallery.length) % DATA.gallery.length;
