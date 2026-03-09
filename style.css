@@ -334,25 +334,75 @@ nav.solid{background:rgba(7,7,26,.85);backdrop-filter:blur(32px);border-bottom:1
   #statement{padding:12vh 6vw;}
   #contact{padding:12vh 6vw;}
   .ct-foot{flex-direction:column;gap:1.5rem;align-items:flex-start;}
-  .proj-outer{height:auto!important;}
-  .proj-sticky{position:relative!important;height:auto!important;overflow:visible!important;padding:12vh 0 8vh;}
-  .proj-grid,.proj-grid.rev{grid-template-columns:1fr!important;direction:ltr!important;gap:5vh!important;padding:0 6vw!important;}
-  .proj-visual{overflow:visible;}
-  .ipod-stage{width:220px!important;}
-  .ipod-body{width:220px!important;}
-  .phone-stage{width:200px!important;}
-  .phone-body{width:200px!important;}
+
+  /* ── Sticky parallax: misma estructura que desktop ── */
+  .proj-outer{height:280vh!important;}
+  .proj-sticky{
+    position:sticky!important;top:0!important;height:100svh!important;
+    overflow:hidden!important;padding:0!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;
+  }
+  /* Una columna, copy arriba, visual abajo */
+  .proj-grid,.proj-grid.rev{
+    grid-template-columns:1fr!important;direction:ltr!important;
+    gap:2.5vh!important;padding:0 6vw!important;
+    width:100%!important;align-items:center!important;
+  }
+  .proj-grid .proj-copy,.proj-grid.rev .proj-copy{order:1!important;}
+  .proj-grid .proj-visual,.proj-grid.rev .proj-visual{order:2!important;justify-content:center!important;}
+
+  /* Texto compacto para que quepa en 100vh junto al device */
+  .proj-tag{margin-bottom:.6rem!important;font-size:.52rem!important;}
+  .proj-bnum{font-size:3.5rem!important;margin-bottom:-.5rem!important;}
+  .proj-title{font-size:clamp(1.3rem,5vw,1.7rem)!important;margin-bottom:.7rem!important;line-height:1.1!important;}
+  .proj-desc{font-size:.78rem!important;line-height:1.65!important;margin-bottom:.9rem!important;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .proj-chips{margin-bottom:1rem!important;gap:.3rem!important;}
+  .proj-chips span{font-size:.44rem!important;padding:.25rem .5rem!important;}
+  .proj-link{font-size:.56rem!important;}
+
+  /* iPod — escala al viewport sin desbordar */
+  .ipod-stage{width:min(220px,50vw)!important;}
+  .ipod-body{width:min(220px,50vw)!important;padding:12px 12px 24px!important;border-radius:22px!important;}
+  .ipod-wheel{width:min(100px,38vw)!important;height:min(100px,38vw)!important;}
+  .ipod-wheel-center{width:min(38px,14vw)!important;height:min(38px,14vw)!important;}
+
+  /* Phone — aspecto ratio reducido para que el dashboard quepa entero */
+  .phone-stage{width:min(195px,44vw)!important;}
+  .phone-body{width:min(195px,44vw)!important;padding:10px!important;border-radius:32px!important;}
+  .phone-scr-shell{aspect-ratio:9/17!important;border-radius:24px!important;}
+  .phone-notch{width:56px!important;height:18px!important;}
+  /* UI interna reducida proporcionalmente */
+  .phi-topbar{padding:2px 0 4px!important;margin-bottom:4px!important;}
+  .phi-greet{font-size:.42rem!important;}
+  .phi-name{font-size:.68rem!important;margin-bottom:4px!important;}
+  .phi-ring-wrap{margin:1px 0 4px!important;}
+  .phi-ring{width:50px!important;height:50px!important;}
+  .phi-ring::before{inset:5px!important;}
+  .phi-ring-v{font-size:.6rem!important;}
+  .phi-metrics{gap:3px!important;margin-bottom:4px!important;}
+  .phi-m{padding:3px 5px!important;border-radius:6px!important;}
+  .phi-mv{font-size:.58rem!important;}
+  .phi-ml{font-size:.28rem!important;margin-top:1px!important;}
+  .phi-chart{padding:4px 5px!important;border-radius:7px!important;}
+  .phi-chart-lbl{font-size:.3rem!important;margin-bottom:3px!important;}
+  .phi-bars{height:22px!important;}
+  .phi-nav{padding-top:5px!important;}
+  .phi-dot{width:4px!important;height:4px!important;}
+
   .ann{display:none!important;}
-  .proj-bnum{font-size:5rem!important;}
   .canvas-sec{height:60vh;}
   .ao1,.ao2,.ao3,.ao4{width:300px!important;height:300px!important;}
 }
+
 @media(max-width:480px){
-  .ipod-stage{width:190px!important;}
-  .ipod-body{width:190px!important;}
-  .phone-stage{width:175px!important;}
-  .phone-body{width:175px!important;}
-  .h-title{font-size:3.5rem!important;}
-  .st-h{font-size:1.8rem!important;}
-  .ct-h{font-size:2.5rem!important;}
+  .proj-outer{height:260vh!important;}
+  .h-title{font-size:3.2rem!important;}
+  .st-h{font-size:1.7rem!important;}
+  .ct-h{font-size:2.2rem!important;}
+  .ipod-stage{width:min(195px,56vw)!important;}
+  .ipod-body{width:min(195px,56vw)!important;}
+  .phone-stage{width:min(175px,50vw)!important;}
+  .phone-body{width:min(175px,50vw)!important;}
+  .proj-desc{-webkit-line-clamp:2!important;}
 }

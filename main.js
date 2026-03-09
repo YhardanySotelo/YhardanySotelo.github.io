@@ -417,10 +417,27 @@ function initScrollFX(){
       });
     }
   }
+  /* Mobile: misma lógica prog/p1/p2/p3 que desktop, igual de dramático */
   function onScrollMobile(){
-    var vh=window.innerHeight;
-    if(ipodFloat){var ri=ipodFloat.getBoundingClientRect();var pi=Math.max(-.5,Math.min(1.2,1-(ri.top+ri.height/2)/vh));ipodFloat.style.transition='transform .15s ease-out';ipodFloat.style.transform='perspective(700px) translateY('+(pi*-18)+'px) rotateY('+(-4+pi*4)+'deg) rotateX('+(pi*-12)+'deg)';}
-    if(phoneFloat){var rp=phoneFloat.getBoundingClientRect();var pp=Math.max(-.5,Math.min(1.2,1-(rp.top+rp.height/2)/vh));phoneFloat.style.transition='transform .15s ease-out';phoneFloat.style.transform='perspective(700px) translateY('+(pp*-18)+'px) rotateY('+(4-pp*4)+'deg) rotateX('+(pp*-12)+'deg)';}
+    var sy=window.scrollY;
+    var syEl=document.getElementById('sy');
+    if(syEl){
+      var outerTop=syEl.getBoundingClientRect().top+sy;
+      var prog=Math.max(0,Math.min(1,(sy-outerTop)/syEl.offsetHeight));
+      var p1=Math.max(0,Math.min(1,prog/.25));
+      var p3=Math.max(0,Math.min(1,(prog-.75)/.25));
+      ipodFloat.style.transition='none';
+      ipodFloat.style.transform='perspective(700px) translateY('+((1-easeOut(p1))*110+easeOut(p3)*-90)+'px) rotateY('+(-8+easeOut(p1)*8+p3*-10)+'deg) rotateX('+(20-easeOut(p1)*18+p3*6)+'deg) scale('+(.78+easeOut(p1)*.22-p3*.12)+')';
+    }
+    var skEl=document.getElementById('sk');
+    if(skEl){
+      var outerTop2=skEl.getBoundingClientRect().top+sy;
+      var prog2=Math.max(0,Math.min(1,(sy-outerTop2)/skEl.offsetHeight));
+      var p1b=Math.max(0,Math.min(1,prog2/.25));
+      var p3b=Math.max(0,Math.min(1,(prog2-.75)/.25));
+      phoneFloat.style.transition='none';
+      phoneFloat.style.transform='perspective(700px) translateY('+((1-easeOut(p1b))*110+easeOut(p3b)*-90)+'px) rotateY('+(8-easeOut(p1b)*8+p3b*10)+'deg) rotateX('+(20-easeOut(p1b)*18+p3b*6)+'deg) scale('+(.78+easeOut(p1b)*.22-p3b*.12)+')';
+    }
   }
   if(desktop){window.addEventListener('scroll',onScrollDesktop,{passive:true});onScrollDesktop();}
   else{window.addEventListener('scroll',onScrollMobile,{passive:true});onScrollMobile();}
