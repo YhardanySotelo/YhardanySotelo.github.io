@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sotelo — Digital Craftsman</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,300;1,400;1,700&family=DM+Sans:wght@200;300;400;500&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- AURORA BACKGROUND -->
+<div class="aurora-bg">
+  <div class="aurora-orb ao1"></div>
+  <div class="aurora-orb ao2"></div>
+  <div class="aurora-orb ao3"></div>
+  <div class="aurora-orb ao4"></div>
+</div>
+
+<div class="grain"></div>
+<div id="scroll-prog"></div>
+
+<!-- CURSOR -->
+<div id="cur"></div>
+<div id="cur-r"></div>
+<div id="cur-inner"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="ld-logo">So<em>t</em>elo</div>
+  <div class="ld-bar-bg"><div class="ld-bar" id="ld-bar"></div></div>
+  <div class="ld-pct" id="ld-pct">0%</div>
+  <div class="ld-loc">Tunja, Boyacá &nbsp;·&nbsp; Colombia</div>
+  <div class="ld-time" id="ld-clock-disp"></div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="n-logo" id="n-logo">So<em>t</em>elo</a>
+  <ul class="n-links">
+    <li><a href="#sy">Proyectos</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Servicios</a></li>
+    <li><a href="#contact">Contacto</a></li>
+  </ul>
+  <a href="#contact" class="n-cta">Trabajemos &rarr;</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-inner" id="hero-inner">
+    <div class="h-location" id="h-location">&#9684; &nbsp;Tunja, Boyacá &nbsp;·&nbsp; Colombia</div>
+    <div class="h-eye" id="h-eye">Dise&ntilde;o &nbsp;&middot;&nbsp; C&oacute;digo &nbsp;&middot;&nbsp; Identidad</div>
+    <h1 class="h-title" id="h-title">Digital<br><em class="glitch-text" data-text="Craftsman"><span class="scramble" id="hero-scramble">Craftsman</span></em></h1>
+    <p class="h-sub" id="h-sub">Construyo experiencias que las personas sienten<br>antes de entender por qu&eacute; las aman.</p>
+    <div class="h-btns" id="h-btns">
+      <a href="#sy" class="btn-a"><span>Ver Proyectos</span></a>
+      <a href="#contact" class="btn-b">Hablemos</a>
+    </div>
+    <div class="h-clock" id="h-clock">&#9679; &nbsp;TUNJA, COL &nbsp;·&nbsp; <span id="live-time">--:--:--</span></div>
+  </div>
+  <div class="h-scroll" id="h-scroll"><span>Scroll</span><div class="h-sline"></div></div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee"><div class="mq-t">
+  <span>UI Design</span><span class="dm">&#9670;</span><span>Development</span><span class="dm">&#9670;</span><span>Branding</span><span class="dm">&#9670;</span><span>Motion</span><span class="dm">&#9670;</span><span>3D / WebGL</span><span class="dm">&#9670;</span><span>Identity</span><span class="dm">&#9670;</span><span>Strategy</span><span class="dm">&#9670;</span><span>Experience</span><span class="dm">&#9670;</span><span>Tunja &middot; Boyacá</span><span class="dm">&#9670;</span><span>UI Design</span><span class="dm">&#9670;</span><span>Development</span><span class="dm">&#9670;</span><span>Branding</span><span class="dm">&#9670;</span><span>Motion</span><span class="dm">&#9670;</span><span>3D / WebGL</span><span class="dm">&#9670;</span><span>Identity</span><span class="dm">&#9670;</span><span>Strategy</span><span class="dm">&#9670;</span><span>Experience</span><span class="dm">&#9670;</span><span>Tunja &middot; Boyacá</span><span class="dm">&#9670;</span>
+</div></div>
+
+<!-- STATEMENT -->
+<section id="statement">
+  <div class="st-tag rv">01 &mdash; Filosof&iacute;a</div>
+  <h2 class="st-h rv d1">El mejor dise&ntilde;o es aquel que <em>desaparece</em> &mdash;<br>dejando solo la experiencia pura.</h2>
+  <p class="st-p rv d2">Cada pixel tiene prop&oacute;sito. Cada interacci&oacute;n cuenta una historia. Trabajo donde la tecnolog&iacute;a se vuelve emoci&oacute;n.</p>
+</section>
+
+<div class="sec-divider"></div>
+
+<!-- PROJECT 1 -->
+<div class="proj-outer" id="sy">
+  <div class="proj-sticky" id="sy-sticky">
+    <div class="proj-grid" id="sy-grid">
+      <div class="proj-copy">
+        <div class="proj-tag">M&uacute;sica &middot; Web Experience</div>
+        <div class="proj-bnum">01</div>
+        <h3 class="proj-title">M&uacute;sico<br><em>Colombiano</em></h3>
+        <p class="proj-desc">Dise&ntilde;&eacute; la presencia digital de un reconocido artista colombiano: una experiencia web &uacute;nica construida alrededor de un iPod interactivo y funcional que contiene toda su identidad digital &mdash; m&uacute;sica, videos, biograf&iacute;a y contacto &mdash; dentro de un dispositivo ic&oacute;nico reimaginado para el browser.</p>
+        <div class="proj-chips"><span>Web Experience</span><span>UI/UX</span><span>CSS 3D</span><span>Music Player</span><span>Brand Identity</span></div>
+        <a href="#" class="proj-link">Ver Experiencia &rarr;</a>
+      </div>
+      <div class="proj-visual">
+        <div class="ipod-stage" id="ipod-stage">
+          <div class="ipod-glow"></div>
+          <div class="ipod-shadow"></div>
+          <div class="ipod-float" id="ipod-float">
+            <div class="ipod-body">
+              <div class="ipod-scr-shell">
+                <div class="ipod-scr">
+                  <div class="scanlines"></div>
+                  <div class="isc-song">Nombre del Artista</div>
+                  <div class="isc-artist">Now Playing &middot; Artista colombiano</div>
+                  <div class="isc-prog"><div class="isc-prog-bar"></div></div>
+                  <div class="isc-eq"><span></span><span></span><span></span><span></span><span></span></div>
+                  <div class="isc-time"><span>1:24</span><span>3:58</span></div>
+                </div>
+              </div>
+              <div class="ipod-wheel">
+                <div class="ipod-wlbl">
+                  <span class="wlm">MENU</span><span class="wlb">&#9664;&#9664;</span>
+                  <span class="wlf">&#9654;&#9654;</span><span class="wlp">&#9654;&#9646;&#9646;</span>
+                </div>
+                <div class="ipod-wheel-center"></div>
+              </div>
+              <div class="ipod-shine"></div>
+            </div>
+          </div>
+          <div class="ann" id="an1" style="top:13%;right:-155px;transform:translateX(15px);">
+            <div class="ann-line" style="width:44px;"></div><span>iPod Web Nativo</span>
+          </div>
+          <div class="ann" id="an2" style="top:55%;right:-190px;transform:translateX(15px);">
+            <div class="ann-line" style="width:58px;"></div><span>Click wheel funcional</span>
+          </div>
+          <div class="ann" id="an3" style="bottom:10%;left:-175px;flex-direction:row-reverse;transform:translateX(-15px);">
+            <div class="ann-line" style="width:44px;"></div><span>UI completamente interactiva</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec-divider"></div>
+
+<!-- PROJECT 2 -->
+<div class="proj-outer" id="sk">
+  <div class="proj-sticky" id="sk-sticky">
+    <div class="proj-grid rev" id="sk-grid">
+      <div class="proj-copy">
+        <div class="proj-tag">Fitness Tech &middot; App Design</div>
+        <div class="proj-bnum">02</div>
+        <h3 class="proj-title"><em>Saykyo</em><br>Training App</h3>
+        <p class="proj-desc">Plataforma completa de entrenamiento con gesti&oacute;n de usuarios y rutinas, ejercicios personalizados, seguimiento con gr&aacute;ficas estrat&eacute;gicas, valoraciones corporales y un sistema de analytics que convierte datos en resultados.</p>
+        <div class="proj-chips"><span>App Design</span><span>UX Research</span><span>Data Viz</span><span>Dashboard</span><span>Health Tech</span><span>React Native</span></div>
+        <a href="#" class="proj-link">Ver Case Study &rarr;</a>
+      </div>
+      <div class="proj-visual">
+        <div class="phone-stage" id="phone-stage">
+          <div class="phone-glow"></div>
+          <div class="phone-shadow"></div>
+          <div class="phone-float" id="phone-float">
+            <div class="phone-body">
+              <div class="phone-scr-shell">
+                <div class="phone-notch"></div>
+                <div class="phone-ui">
+                  <div class="phi-topbar"><span class="phi-appname">Saykyo</span><span class="phi-badge">PRO</span></div>
+                  <div class="phi-greet">Buenos d&iacute;as,</div>
+                  <div class="phi-name">Camilo</div>
+                  <div class="phi-ring-wrap"><div class="phi-ring"><div class="phi-ring-v">73%</div></div></div>
+                  <div class="phi-metrics">
+                    <div class="phi-m"><div class="phi-mv">2,847</div><div class="phi-ml">Calor&iacute;as</div></div>
+                    <div class="phi-m"><div class="phi-mv">1h 24m</div><div class="phi-ml">Entreno</div></div>
+                    <div class="phi-m"><div class="phi-mv">82kg</div><div class="phi-ml">Peso</div></div>
+                    <div class="phi-m"><div class="phi-mv">14.2%</div><div class="phi-ml">Grasa corp.</div></div>
+                  </div>
+                  <div class="phi-chart">
+                    <div class="phi-chart-lbl">Progreso semanal</div>
+                    <div class="phi-bars" id="phi-bars"></div>
+                  </div>
+                  <div class="phi-nav">
+                    <div class="phi-dot on"></div><div class="phi-dot"></div><div class="phi-dot"></div><div class="phi-dot"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="phone-btn-r"></div>
+              <div class="phone-btn-l1"></div>
+              <div class="phone-btn-l2"></div>
+              <div class="phone-btn-l3"></div>
+            </div>
+          </div>
+          <div class="ann" id="an4" style="top:10%;left:-168px;flex-direction:row-reverse;transform:translateX(15px);">
+            <div class="ann-line" style="width:44px;"></div><span>Dashboard inteligente</span>
+          </div>
+          <div class="ann" id="an5" style="top:52%;left:-200px;flex-direction:row-reverse;transform:translateX(15px);">
+            <div class="ann-line" style="width:58px;"></div><span>M&eacute;tricas corporales en vivo</span>
+          </div>
+          <div class="ann" id="an6" style="bottom:12%;right:-155px;transform:translateX(-15px);">
+            <div class="ann-line" style="width:44px;"></div><span>Gr&aacute;ficas de progreso</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3D INTERLUDE -->
+<div class="canvas-sec" id="interlude">
+  <canvas id="scene-canvas"></canvas>
+  <div class="canvas-over">
+    <h2 class="rv">C&oacute;digo que<br><em>respira.</em></h2>
+    <p class="rv d1">Cada proyecto, un universo construido desde cero.</p>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div>
+    <div class="ab-tag rv">03 &mdash; About Sotelo</div>
+    <h2 class="ab-h rv d1">Obsesionado<br>con lo <em>extraordinario.</em></h2>
+    <p class="ab-p rv d2">Soy un creativo digital que vive en la intersecci&oacute;n entre dise&ntilde;o, c&oacute;digo e identidad. Desde <strong style="color:var(--ac);font-weight:400;">Tunja, Boyacá</strong> — No hago p&aacute;ginas web &mdash; construyo experiencias que la gente recuerda.</p>
+    <p class="ab-p rv d3" style="margin-top:0">Cada proyecto empieza con una pregunta: &iquest;c&oacute;mo hacemos esto de una manera que nadie haya visto antes?</p>
+    <div class="ab-stats rv d4" id="ab-stats"></div>
+  </div>
+  <div class="rv d2"><canvas id="about-canvas"></canvas></div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="sv-head">
+    <div>
+      <div class="rv" style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.4em;text-transform:uppercase;color:var(--ac);margin-bottom:1rem;">04 &mdash; Servicios</div>
+      <h2 class="rv d1">Lo que<br><em>creo</em></h2>
+    </div>
+  </div>
+  <div class="sv-grid">
+    <div class="sv-cell rv"><div class="sv-glow"></div><div class="sv-n">01</div><div class="sv-title">UI / UX Design</div><div class="sv-d">Interfaces que generan emociones y conversiones reales.</div></div>
+    <div class="sv-cell rv d1"><div class="sv-glow"></div><div class="sv-n">02</div><div class="sv-title">Desarrollo Web</div><div class="sv-d">C&oacute;digo limpio, animaciones fluidas, experiencias que escalan.</div></div>
+    <div class="sv-cell rv d2"><div class="sv-glow"></div><div class="sv-n">03</div><div class="sv-title">Identidad de Marca</div><div class="sv-d">Sistemas visuales completos que comunican qui&eacute;n eres.</div></div>
+    <div class="sv-cell rv"><div class="sv-glow"></div><div class="sv-n">04</div><div class="sv-title">Motion &amp; 3D</div><div class="sv-d">Animaciones 3D, WebGL y micro-interacciones de alto impacto.</div></div>
+    <div class="sv-cell rv d1"><div class="sv-glow"></div><div class="sv-n">05</div><div class="sv-title">App Design</div><div class="sv-d">De wireframes a prototipos interactivos listos para producci&oacute;n.</div></div>
+    <div class="sv-cell rv d2"><div class="sv-glow"></div><div class="sv-n">06</div><div class="sv-title">Consultor&iacute;a Creativa</div><div class="sv-d">Estrategia de producto, auditor&iacute;as de marca y direcci&oacute;n creativa.</div></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="ct-watermark">SOTELO</div>
+  <div class="ct-tag rv">05 &mdash; Contacto</div>
+  <h2 class="ct-h rv d1">Hagamos<br>algo<br><em>incre&iacute;ble.</em></h2>
+  <div class="ct-avail rv d2">Disponible para proyectos 2026</div>
+  <div class="ct-email-wrap rv d2">
+    <a href="mailto:yhasotelo@hotmail.com" class="ct-email">yhasotelo@hotmail.com</a>
+  </div>
+  <div class="ct-location rv d3">Tunja, Boyacá &nbsp;·&nbsp; Colombia &nbsp;·&nbsp; COL</div>
+  <div class="ct-foot rv d4">
+    <div class="ct-cp">&copy; 2026 Sotelo Studio &mdash; Tunja, Boyac&aacute;</div>
+    <div class="ct-made">Hecho con obsesi&oacute;n &nbsp;·&nbsp; Colombia</div>
+  </div>
+</section>
+
+<!-- Three.js (CDN) cargado antes del script principal -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>
