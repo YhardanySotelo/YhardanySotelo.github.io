@@ -369,23 +369,46 @@ function buildProjects(el){
 }
 
 function buildServices(el){
-  el.style.background='#fff';
+  el.style.background='#f2f2f7';
+  var isMob=window.innerWidth<=1024;
   var svcs=[
-    {ic:'gallery',bg:'linear-gradient(135deg,#007AFF,#5E5CE6)',n:'UI / UX Design',d:'Interfaces que generan emociones y conversiones reales.'},
-    {ic:'terminal',bg:'linear-gradient(135deg,#34C759,#007AFF)',n:'Desarrollo Web',d:'Código limpio, animaciones fluidas, experiencias que escalan.'},
-    {ic:'philosophy',bg:'linear-gradient(135deg,#AF52DE,#FF2D55)',n:'Identidad de Marca',d:'Sistemas visuales completos que comunican quién eres.'},
-    {ic:'ipod',bg:'linear-gradient(135deg,#FF9500,#FF2D55)',n:'Motion & 3D',d:'Animaciones 3D, WebGL y micro-interacciones de alto impacto.'},
-    {ic:'saykyo',bg:'linear-gradient(135deg,#5AC8FA,#007AFF)',n:'App Design',d:'De wireframes a prototipos interactivos listos para producción.'},
-    {ic:'contact',bg:'linear-gradient(135deg,#FFD60A,#FF9500)',n:'Consultoría',d:'Estrategia de producto, auditorías de marca y dirección creativa.'},
+    {ic:'gallery', bg:'linear-gradient(135deg,#007AFF,#5E5CE6)', n:'UI / UX Design',      d:'Interfaces que generan emociones y conversiones reales.'},
+    {ic:'terminal',bg:'linear-gradient(135deg,#34C759,#007AFF)', n:'Desarrollo Web',       d:'Código limpio, animaciones fluidas, experiencias que escalan.'},
+    {ic:'philosophy',bg:'linear-gradient(135deg,#AF52DE,#FF2D55)',n:'Identidad de Marca',  d:'Sistemas visuales completos que comunican quién eres.'},
+    {ic:'ipod',    bg:'linear-gradient(135deg,#FF9500,#FF2D55)', n:'Motion & 3D',          d:'Animaciones 3D, WebGL y micro-interacciones de alto impacto.'},
+    {ic:'saykyo',  bg:'linear-gradient(135deg,#5AC8FA,#007AFF)', n:'App Design',           d:'De wireframes a prototipos interactivos listos para producción.'},
+    {ic:'contact', bg:'linear-gradient(135deg,#FFD60A,#FF9500)', n:'Consultoría',          d:'Estrategia de producto, auditorías de marca y dirección creativa.'},
   ];
-  el.innerHTML=
-    '<div style="padding:12px 16px 4px;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;">04 — Servicios · Lo que creo</div>'+
-    '<div class="svgrid">'+svcs.map(s=>`
-      <div class="svcell">
-        <div class="sv-ic" style="background:${s.bg}">${ICONS[s.ic]}</div>
-        <div class="sv-n">${s.n}</div>
-        <div class="sv-d">${s.d}</div>
-      </div>`).join('')+'</div>';
+
+  if(isMob){
+    // Mobile: iOS grouped list style — full width rows
+    el.innerHTML=`
+<div style="padding:16px 16px 32px;">
+  <div style="font-size:11px;font-weight:600;color:rgba(60,60,67,.6);text-transform:uppercase;letter-spacing:.08em;padding:4px 4px 10px;">Servicios · Lo que creo</div>
+  <div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.06);">
+    ${svcs.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;${i<svcs.length-1?'border-bottom:1px solid rgba(0,0,0,.07);':''}">
+      <div style="width:46px;height:46px;border-radius:12px;overflow:hidden;flex-shrink:0;background:${s.bg};box-shadow:0 2px 8px rgba(0,0,0,.15);">${ICONS[s.ic]}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;font-weight:600;color:rgba(0,0,0,.88);margin-bottom:2px;">${s.n}</div>
+        <div style="font-size:13px;color:rgba(0,0,0,.5);line-height:1.4;">${s.d}</div>
+      </div>
+      <svg width="7" height="12" viewBox="0 0 7 12" fill="none" style="flex-shrink:0;"><path d="M1 1l5 5-5 5" stroke="rgba(0,0,0,.25)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>`).join('')}
+  </div>
+</div>`;
+  } else {
+    // Desktop: original 3-col grid
+    el.style.background='#fff';
+    el.innerHTML=
+      '<div style="padding:12px 16px 4px;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;">04 — Servicios · Lo que creo</div>'+
+      '<div class="svgrid">'+svcs.map(s=>`
+        <div class="svcell">
+          <div class="sv-ic" style="background:${s.bg}">${ICONS[s.ic]}</div>
+          <div class="sv-n">${s.n}</div>
+          <div class="sv-d">${s.d}</div>
+        </div>`).join('')+'</div>';
+  }
 }
 
 /* ── GALLERY — dynamic photo loader ── */
