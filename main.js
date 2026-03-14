@@ -123,7 +123,7 @@ var APPS = {
   philosophy:{title:'Filosofía',    w:480,h:440, build:buildPhilosophy},
   ipod:      {title:'Músico Colombiano', w:420,h:600, build:buildIpod},
   saykyo:    {title:'Saykyo Training',   w:420,h:600, build:buildSaykyo},
-  game:      {title:'Snake',             w:460,h:580, build:buildGame},
+  game:      {title:'Snake',             w:460,h:560, build:buildGame},
 };
 
 /* ── icon HTML helper ── */
@@ -977,6 +977,7 @@ function iosSwitch(dir){
 }
 var DARK_APPS = {ipod:1, saykyo:1, terminal:1, game:1};
 var GRAY_APPS = {projects:1, philosophy:1, services:1};
+var FULLSCREEN_APPS = {game:1};
 function openSheet(id){
   var def=APPS[id];if(!def)return;
   document.getElementById('sheet-title').textContent=def.title;
@@ -984,10 +985,17 @@ function openSheet(id){
   if(DARK_APPS[id]) body.className='ios-card-body dark-app';
   else if(GRAY_APPS[id]) body.className='ios-card-body gray-app';
   else body.className='ios-card-body';
+  var sheet=document.getElementById('ios-sheet');
+  if(FULLSCREEN_APPS[id]) sheet.classList.add('fullscreen-sheet');
+  else sheet.classList.remove('fullscreen-sheet');
   def.build(body);
-  document.getElementById('ios-sheet').classList.add('on');
+  sheet.classList.add('on');
 }
-function closeSheet(){document.getElementById('ios-sheet').classList.remove('on');}
+function closeSheet(){
+  var sheet=document.getElementById('ios-sheet');
+  sheet.classList.remove('on');
+  setTimeout(function(){ sheet.classList.remove('fullscreen-sheet'); }, 500);
+}
 // Swipe down sheet to close — only when body is at scroll top AND clearly dragging down
 var sheetY=0, sheetSwipeOk=false;
 document.querySelector('.ios-card').addEventListener('touchstart',function(e){
@@ -1162,39 +1170,62 @@ function buildGame(el){
   el.style.overflow = 'hidden';
   el.style.userSelect = 'none';
 
-  var CELL = isMob ? 18 : 20;
+  var CELL = isMob ? 22 : 18;
   var COLS, ROWS, W, H;
 
   el.innerHTML = `
 <style>
-#gcanvas{display:block;touch-action:none;}
-.g-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:0;background:#000;}
+#gcanvas{display:block;touch-action:none;border-radius:16px;}
+.g-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:0;
+  background:radial-gradient(ellipse at 50% 30%,#0d1f0d 0%,#050505 70%);}
 .g-hud{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 16px 8px;flex-shrink:0;}
 .g-score-box{display:flex;flex-direction:column;align-items:center;gap:1px;}
-.g-score-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);}
-.g-score-val{font-size:28px;font-weight:800;color:#fff;font-family:'SF Mono','Menlo',monospace;letter-spacing:-.02em;line-height:1;}
-.g-level-pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.04em;}
-.g-canvas-wrap{position:relative;flex-shrink:0;}
-.g-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-  background:rgba(0,0,0,.82);backdrop-filter:blur(12px);border-radius:inherit;
+.g-score-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);}
+.g-score-val{font-size:28px;font-weight:800;color:#fff;font-family:'SF Mono','Menlo',monospace;letter-spacing:-.02em;line-height:1;
+  transition:transform .12s cubic-bezier(.34,1.56,.64,1);}
+.g-score-val.pop{transform:scale(1.35);}
+.g-level-pill{background:rgba(48,209,88,.12);border:1px solid rgba(48,209,88,.25);border-radius:20px;
+  padding:5px 14px;font-size:11px;font-weight:600;color:#30D158;letter-spacing:.04em;
+  box-shadow:0 0 12px rgba(48,209,88,.15);transition:all .3s;}
+.g-canvas-wrap{
+  position:relative;flex-shrink:0;
+  border-radius:18px;
+  padding:3px;
+  background:linear-gradient(135deg,rgba(48,209,88,.5),rgba(0,122,255,.3),rgba(48,209,88,.5));
+  background-size:200% 200%;
+  animation:g-border-spin 4s linear infinite;
+  box-shadow:0 0 32px rgba(48,209,88,.2),0 0 64px rgba(48,209,88,.08),0 8px 32px rgba(0,0,0,.6);
+}
+@keyframes g-border-spin{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+.g-canvas-inner{border-radius:16px;overflow:hidden;position:relative;}
+.g-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(16px);border-radius:16px;
+  overflow-y:auto;padding:16px 12px;
   transition:opacity .3s;}
 .g-overlay.hidden{opacity:0;pointer-events:none;}
-.g-over-title{font-size:32px;font-weight:800;color:#fff;letter-spacing:-.03em;}
-.g-over-sub{font-size:13px;color:rgba(255,255,255,.45);margin-top:-4px;}
-.g-over-score{font-size:52px;font-weight:900;color:#30D158;font-family:'SF Mono','Menlo',monospace;line-height:1;margin:6px 0 2px;}
-.g-over-best{font-size:11px;color:rgba(255,255,255,.35);letter-spacing:.06em;text-transform:uppercase;}
+.g-over-emoji{font-size:32px;margin-bottom:-2px;}
+.g-over-title{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.03em;}
+.g-over-sub{font-size:11px;color:rgba(255,255,255,.38);margin-top:-2px;letter-spacing:.04em;text-transform:uppercase;}
+.g-over-score{font-size:46px;font-weight:900;color:#30D158;font-family:'SF Mono','Menlo',monospace;
+  line-height:1;margin:2px 0 0;text-shadow:0 0 30px rgba(48,209,88,.5);}
+.g-over-best{font-size:10px;color:rgba(255,255,255,.28);letter-spacing:.08em;text-transform:uppercase;margin-top:1px;}
 .g-btn{background:linear-gradient(135deg,#30D158,#25a244);color:#fff;border:none;border-radius:14px;
-  font-size:15px;font-weight:700;padding:13px 36px;cursor:pointer;margin-top:10px;
-  box-shadow:0 4px 20px rgba(48,209,88,.4);letter-spacing:-.01em;
-  transition:transform .1s,box-shadow .1s;-webkit-tap-highlight-color:transparent;}
+  font-size:15px;font-weight:700;padding:13px 36px;cursor:pointer;margin-top:12px;
+  box-shadow:0 4px 24px rgba(48,209,88,.45),inset 0 1px 0 rgba(255,255,255,.2);
+  letter-spacing:-.01em;transition:transform .1s,box-shadow .1s;-webkit-tap-highlight-color:transparent;}
 .g-btn:active{transform:scale(.96);box-shadow:0 2px 10px rgba(48,209,88,.3);}
 .g-dpad{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px);gap:4px;margin:10px auto 0;flex-shrink:0;}
-.g-dpad-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:14px;
-  display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;
-  -webkit-tap-highlight-color:transparent;transition:background .08s,transform .08s;}
-.g-dpad-btn:active{background:rgba(255,255,255,.22);transform:scale(.92);}
-.g-dpad-center{background:rgba(255,255,255,.06);border-radius:50%;}
-.g-hint{font-size:10px;color:rgba(255,255,255,.2);text-align:center;padding:6px 0 2px;letter-spacing:.04em;flex-shrink:0;}
+.g-dpad-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;color:rgba(255,255,255,.7);cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:background .08s,transform .08s,box-shadow .08s;}
+.g-dpad-btn:active{background:rgba(48,209,88,.25);border-color:rgba(48,209,88,.4);
+  box-shadow:0 0 12px rgba(48,209,88,.3);transform:scale(.9);}
+.g-dpad-center{background:rgba(255,255,255,.04);border-radius:50%;color:rgba(255,255,255,.4);}
+.g-hint{font-size:10px;color:rgba(255,255,255,.18);text-align:center;padding:6px 0 2px;letter-spacing:.04em;flex-shrink:0;}
 </style>
 <div class="g-wrap" id="g-wrap">
   <div class="g-hud">
@@ -1209,13 +1240,16 @@ function buildGame(el){
     </div>
   </div>
   <div class="g-canvas-wrap" id="g-canvas-wrap">
-    <canvas id="gcanvas"></canvas>
-    <div class="g-overlay" id="g-overlay">
-      <div class="g-over-title" id="g-over-title">Snake</div>
-      <div class="g-over-sub" id="g-over-sub">Sotelo Edition</div>
-      <div class="g-over-score" id="g-over-score" style="display:none"></div>
-      <div class="g-over-best" id="g-over-best" style="display:none"></div>
-      <button class="g-btn" id="g-start-btn">▶ Jugar</button>
+    <div class="g-canvas-inner" id="g-canvas-inner">
+      <canvas id="gcanvas"></canvas>
+      <div class="g-overlay" id="g-overlay">
+        <div class="g-over-emoji" id="g-over-emoji">🐍</div>
+        <div class="g-over-title" id="g-over-title">Snake</div>
+        <div class="g-over-sub" id="g-over-sub">Sotelo Edition</div>
+        <div class="g-over-score" id="g-over-score" style="display:none"></div>
+        <div class="g-over-best" id="g-over-best" style="display:none"></div>
+        <button class="g-btn" id="g-start-btn">▶ Jugar</button>
+      </div>
     </div>
   </div>
   ${isMob ? `
@@ -1230,35 +1264,47 @@ function buildGame(el){
     <div class="g-dpad-btn" id="gbtn-down">↓</div>
     <div></div>
   </div>
-  <div class="g-hint">Desliza o usa el pad para mover la serpiente</div>
-  ` : '<div class="g-hint">← → ↑ ↓ · Espacio para pausar</div>'}
+  <div class="g-hint">Desliza o usa el pad · toca centro para pausar</div>
+  ` : '<div class="g-hint">← → ↑ ↓ &nbsp;·&nbsp; Espacio para pausar</div>'}
 </div>`;
 
   /* ── sizing ── */
   var wrap = document.getElementById('g-canvas-wrap');
+  var inner = document.getElementById('g-canvas-inner');
   var canvas = document.getElementById('gcanvas');
   var ctx = canvas.getContext('2d');
 
   function resize(){
-    var availH = el.clientHeight - (isMob ? 210 : 120);
-    var availW = el.clientWidth - 32;
+    // Measure actual heights of non-canvas elements
+    var hud = el.querySelector('.g-hud');
+    var dpad = el.querySelector('.g-dpad');
+    var hint = el.querySelector('.g-hint');
+    var hudH = hud ? hud.offsetHeight : 52;
+    var dpadH = dpad ? dpad.offsetHeight + 16 : 0;
+    var hintH = hint ? hint.offsetHeight : 20;
+    var padding = 24; // top+bottom breathing room
+
+    var availH = el.clientHeight - hudH - dpadH - hintH - padding - 6; // 6 = border wrap
+    var availW = el.clientWidth - 32; // side padding
+
     COLS = Math.floor(availW / CELL);
     ROWS = Math.floor(availH / CELL);
-    // Keep even numbers for cleaner center
     if(COLS%2!==0) COLS--;
     if(ROWS%2!==0) ROWS--;
-    COLS = Math.max(10, COLS);
-    ROWS = Math.max(10, ROWS);
+    COLS = Math.max(8, COLS);
+    ROWS = Math.max(8, ROWS);
     W = COLS * CELL;
     H = ROWS * CELL;
     canvas.width = W;
     canvas.height = H;
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
-    canvas.style.borderRadius = '16px';
-    wrap.style.width = W + 'px';
-    wrap.style.height = H + 'px';
+    inner.style.width = W + 'px';
+    inner.style.height = H + 'px';
+    wrap.style.width = (W + 6) + 'px';
+    wrap.style.height = (H + 6) + 'px';
     if(gameState === 'playing') draw();
+    else draw();
   }
 
   /* ── state ── */
@@ -1311,16 +1357,33 @@ function buildGame(el){
   var hue = 0;
   function draw(){
     hue = (hue+0.4)%360;
-    ctx.fillStyle = '#0a0a0a';
+
+    // Background — deep dark green tint
+    ctx.fillStyle = '#080e08';
     ctx.fillRect(0,0,W,H);
 
-    // Grid dots
-    ctx.fillStyle = 'rgba(255,255,255,.04)';
-    for(var gx=0;gx<COLS;gx++) for(var gy=0;gy<ROWS;gy++){
-      ctx.beginPath();
-      ctx.arc(gx*CELL+CELL/2, gy*CELL+CELL/2, 1, 0, Math.PI*2);
-      ctx.fill();
+    // Grid lines — subtle green tint
+    ctx.strokeStyle = 'rgba(48,209,88,.07)';
+    ctx.lineWidth = 0.5;
+    for(var gx=0;gx<=COLS;gx++){
+      ctx.beginPath(); ctx.moveTo(gx*CELL,0); ctx.lineTo(gx*CELL,H); ctx.stroke();
     }
+    for(var gy=0;gy<=ROWS;gy++){
+      ctx.beginPath(); ctx.moveTo(0,gy*CELL); ctx.lineTo(W,gy*CELL); ctx.stroke();
+    }
+
+    // Scanlines overlay
+    for(var sl=0;sl<H;sl+=4){
+      ctx.fillStyle='rgba(0,0,0,.06)';
+      ctx.fillRect(0,sl,W,2);
+    }
+
+    // Corner accent dots
+    var ca='rgba(48,209,88,.3)', cs=6;
+    ctx.fillStyle=ca;
+    [[0,0],[W,0],[0,H],[W,H]].forEach(function(c){
+      ctx.beginPath(); ctx.arc(c[0],c[1],cs,0,Math.PI*2); ctx.fill();
+    });
 
     // Only draw game elements if game has been initialized
     if(!food || !snake) return;
@@ -1426,10 +1489,16 @@ function buildGame(el){
       if(score>best) best=score;
       spawnParticles(food.x, food.y, food.type==='super'?'#FF9500':'#30D158');
       spawnFood();
-      // Level up every 5 points
       level = Math.floor(score/5)+1;
       speed = Math.max(60, 140 - (level-1)*12);
       updateHUD();
+      // Score pop animation
+      var sv=document.getElementById('g-score');
+      if(sv){sv.classList.remove('pop');void sv.offsetWidth;sv.classList.add('pop');setTimeout(()=>sv.classList.remove('pop'),150);}
+      // Pulse border faster on eat
+      var cw=document.getElementById('g-canvas-wrap');
+      if(cw){cw.style.boxShadow='0 0 48px rgba(48,209,88,.55),0 0 80px rgba(48,209,88,.2),0 8px 32px rgba(0,0,0,.6)';
+        setTimeout(()=>{if(cw)cw.style.boxShadow='';},300);}
     } else {
       snake.pop();
     }
@@ -1439,7 +1508,11 @@ function buildGame(el){
   function startGame(){
     initGame();
     gameState='playing';
-    document.getElementById('g-overlay').classList.add('hidden');
+    var ov=document.getElementById('g-overlay');
+    ov.classList.add('hidden');
+    document.getElementById('g-over-emoji').textContent='🐍';
+    document.getElementById('g-over-score').style.display='none';
+    document.getElementById('g-over-best').style.display='none';
     lastTime=0;
     loopId=requestAnimationFrame(loop);
   }
@@ -1453,12 +1526,13 @@ function buildGame(el){
     spawnParticles(snake[0].x,snake[0].y,'#FF3B30');
     draw();
     setTimeout(function(){
+      document.getElementById('g-over-emoji').textContent='💀';
       document.getElementById('g-over-title').textContent='Game Over';
-      document.getElementById('g-over-sub').textContent='Llegaste al final';
+      document.getElementById('g-over-sub').textContent='puntaje final';
       document.getElementById('g-over-score').style.display='block';
       document.getElementById('g-over-score').textContent=score;
       document.getElementById('g-over-best').style.display='block';
-      document.getElementById('g-over-best').textContent='MEJOR: '+best;
+      document.getElementById('g-over-best').textContent='RÉCORD: '+best;
       document.getElementById('g-start-btn').textContent='↺ Reintentar';
       document.getElementById('g-overlay').classList.remove('hidden');
     }, 400);
