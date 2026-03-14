@@ -1,528 +1,1098 @@
-/* ================================================================
-   SOTELO CONFIG — Edita aquí los valores que quieras controlar
-   ================================================================ */
-var SOTELO_CONFIG = {
-  stats: [
-    { value: 10,  label: 'Proyectos', suffix: '+', colorClass: 'c1' },
-    { value: 8,   label: 'Clientes',  suffix: '+', colorClass: 'c2' },
-    { value: 5,   label: 'Años',      suffix: '+', colorClass: 'c3' }
-  ]
-};
-/* ================================================================ */
-
-(function(){
+/* ═══════════════════════════════════════════════════
+   SOTELO OS — System  (SVG Icon Edition)
+═══════════════════════════════════════════════════ */
 'use strict';
+var Z=300, WINS={}, DRAG=null;
+var isMobile=()=>window.innerWidth<=1024;
 
-/* ─── SCROLL PROGRESS ─── */
-var sp=document.getElementById('scroll-prog');
-function updateProgress(){
-  var d=document.documentElement;
-  sp.style.width=((window.scrollY/(d.scrollHeight-d.clientHeight))*100)+'%';
+/* ── Clock ── */
+function tick(){
+  var t=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit',hour12:false});
+  var a=document.getElementById('mb-clock'); if(a)a.textContent=t;
+  var b=document.getElementById('ios-time'); if(b)b.textContent=t.slice(0,5);
 }
-window.addEventListener('scroll',updateProgress,{passive:true});
+tick(); setInterval(tick,1000);
 
-/* ─── LIVE CLOCK ─── */
-function updateClock(){
-  var now=new Date();
-  var options={timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false};
-  var t=now.toLocaleTimeString('es-CO',options);
-  var el=document.getElementById('live-time');
-  var el2=document.getElementById('ld-clock-disp');
-  if(el)el.textContent=t;
-  if(el2)el2.textContent='LOCAL · '+t;
+/* ══════════════════════════════════════
+   SVG ICON LIBRARY — all identical cross-platform
+══════════════════════════════════════ */
+var ICONS = {
+  finder: `<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="60" height="60" rx="13" fill="#2680EB"/>
+    <rect x="8" y="16" width="44" height="32" rx="4" fill="white" opacity=".95"/>
+    <rect x="8" y="16" width="44" height="10" rx="4" fill="#1A65D6"/>
+    <circle cx="16" cy="21" r="3" fill="#FF5F57"/>
+    <circle cx="26" cy="21" r="3" fill="#FEBC2E"/>
+    <circle cx="36" cy="21" r="3" fill="#28C840"/>
+    <rect x="14" y="32" width="16" height="3" rx="1.5" fill="#BDD0ED"/>
+    <rect x="14" y="38" width="11" height="3" rx="1.5" fill="#BDD0ED"/>
+    <circle cx="42" cy="37" r="6" stroke="white" stroke-width="2.5" fill="none"/>
+    <path d="M46.5 42l3 3" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>`,
+
+  about: `<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="60" height="60" rx="13" fill="url(#sic-about)"/>
+    <circle cx="30" cy="22" r="9" fill="white" opacity=".95"/>
+    <path d="M10 52c0-11 9-20 20-20s20 9 20 20" stroke="white" stroke-width="3" stroke-linecap="round" fill="none" opacity=".9"/>
+  </svg>`,
+
+  projects: `<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="60" height="60" rx="13" fill="url(#sic-projects)"/>
+    <rect x="10" y="20" width="40" height="28" rx="4" fill="white" opacity=".95"/>
+    <rect x="10" y="14" width="18" height="9" rx="3" fill="white" opacity=".75"/>
+    <rect x="16" y="28" width="20" height="3" rx="1.5" fill="#34C759" opacity=".7"/>
+    <rect x="16" y="34" width="14" height="3" rx="1.5" fill="#34C759" opacity=".5"/>
+    <rect x="16" y="40" width="17" height="3" rx="1.5" fill="#34C759" opacity=".4"/>
+  </svg>`,
+
+  services: `<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="60" height="60" rx="13" fill="url(#sic-services)"/>
+    <polygon points="30,10 35,22 48,22 38,30 42,42 30,34 18,42 22,30 12,22 25,22" fill="white" opacity=".95"/>
+  </svg>`,
+
+  gallery: `<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="60" height="60" rx="13" fill="url(#sic-gallery)"/>
+    <rect x="9" y="13" width="42" height="34" rx="5" fill="white" opacity=".95"/>
+    <circle cx="20" cy="23" r="4" fill="#FFD60A"/>
+    <path d="M9 36l10-8 9 7 7-6 16 10" stroke="#FF9F0A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>`,
+
+  terminal: `<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="60" height="60" rx="13" fill="#1E1E1E"/>
+    <rect x="9" y="13" width="42" height="34" rx="5" fill="#282828"/>
+    <path d="M16 24l8 6-8 6" stroke="#50FA7B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <rect x="27" y="34" width="14" height="3" rx="1.5" fill="#6272A4"/>
+  </svg>`,
+
+  contact: `<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="60" height="60" rx="13" fill="url(#sic-contact)"/>
+    <rect x="10" y="17" width="40" height="26" rx="5" fill="white" opacity=".95"/>
+    <path d="M10 22l20 14 20-14" stroke="#0A84FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>`,
+
+  philosophy: `<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="60" height="60" rx="13" fill="url(#sic-philosophy)"/>
+    <rect x="14" y="12" width="32" height="38" rx="4" fill="white" opacity=".95"/>
+    <rect x="19" y="20" width="22" height="2.5" rx="1.25" fill="#BF5AF2" opacity=".7"/>
+    <rect x="19" y="26" width="18" height="2.5" rx="1.25" fill="#BF5AF2" opacity=".5"/>
+    <rect x="19" y="32" width="20" height="2.5" rx="1.25" fill="#BF5AF2" opacity=".4"/>
+    <rect x="19" y="38" width="14" height="2.5" rx="1.25" fill="#BF5AF2" opacity=".3"/>
+    <rect x="10" y="24" width="4" height="14" rx="1" fill="white"/>
+  </svg>`,
+
+  ipod: `<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="60" height="60" rx="13" fill="url(#sic-ipod)"/>
+    <rect x="18" y="8" width="24" height="44" rx="6" fill="white" opacity=".95"/>
+    <rect x="21" y="12" width="18" height="12" rx="2" fill="#FF2D55" opacity=".2"/>
+    <circle cx="30" cy="38" r="8" stroke="#FF2D55" stroke-width="2" fill="none" opacity=".6"/>
+    <circle cx="30" cy="38" r="3" fill="#FF2D55" opacity=".8"/>
+    <path d="M28 32l5 3-5 3V32z" fill="#FF2D55" opacity=".5"/>
+  </svg>`,
+
+  saykyo: `<svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="60" height="60" rx="13" fill="url(#sic-saykyo)"/>
+    <circle cx="30" cy="30" r="16" stroke="white" stroke-width="3" opacity=".3" fill="none"/>
+    <circle cx="30" cy="30" r="16" stroke="white" stroke-width="3" fill="none"
+      stroke-dasharray="75 26" stroke-dashoffset="20" stroke-linecap="round"/>
+    <text x="30" y="35" text-anchor="middle" font-size="11" font-weight="700" fill="white" font-family="-apple-system,sans-serif">73%</text>
+  </svg>`,
 }
-updateClock();setInterval(updateClock,1000);
 
-/* ─── CURSOR EPIC ─── */
-var cur=document.getElementById('cur');
-var curR=document.getElementById('cur-r');
-var curI=document.getElementById('cur-inner');
-var mx=0,my=0,rx=0,ry=0;
-var blobColors=['rgba(77,184,200,0.35)','rgba(224,64,251,0.3)','rgba(93,223,168,0.25)'];
-var blobIdx=0;
-var lastBlobTime=0;
+/* ══════════════════════════════════════
+   APP DEFINITIONS
+══════════════════════════════════════ */
+var APPS = {
+  finder:    {title:'Finder',       w:760,h:480, build:buildFinder},
+  about:     {title:'Sobre Mí',     w:520,h:480, build:buildAbout},
+  projects:  {title:'Proyectos',    w:700,h:530, build:buildProjects},
+  services:  {title:'Servicios',    w:700,h:480, build:buildServices},
+  gallery:   {title:'Galería',      w:620,h:520, build:buildGallery},
+  terminal:  {title:'Terminal',     w:640,h:400, build:buildTerminal},
+  contact:   {title:'Contacto',     w:480,h:440, build:buildContact},
+  philosophy:{title:'Filosofía',    w:480,h:440, build:buildPhilosophy},
+  ipod:      {title:'Músico Colombiano', w:420,h:600, build:buildIpod},
+  saykyo:    {title:'Saykyo Training',   w:420,h:600, build:buildSaykyo},
+};
 
-document.addEventListener('mousemove',function(e){
-  mx=e.clientX;my=e.clientY;
-  cur.style.left=mx+'px';cur.style.top=my+'px';
-  /* Liquid blob trail on fast movement */
-  var now=Date.now();
-  if(now-lastBlobTime>120){
-    lastBlobTime=now;
-    var blob=document.createElement('div');
-    blob.className='c-blob';
-    var s=6+Math.random()*10;
-    blob.style.cssText='left:'+mx+'px;top:'+my+'px;width:'+s+'px;height:'+s+'px;background:'+blobColors[blobIdx%blobColors.length]+';';
-    blobIdx++;
-    document.body.appendChild(blob);
-    setTimeout(function(){blob.remove();},1200);
+/* ── icon HTML helper ── */
+function iconImg(id, cls){
+  cls=cls||'';
+  return '<div class="'+cls+'" style="width:100%;height:100%;">'+ICONS[id]+'</div>';
+}
+
+/* ══════════════════════════════════════
+   WINDOW ENGINE
+══════════════════════════════════════ */
+function openWin(id,ox,oy){
+  var def=APPS[id]; if(!def)return;
+  // Bounce desktop icon
+  var di=document.querySelector('.desk-icon[data-id="'+id+'"]');
+  if(di){di.classList.add('bounce');setTimeout(()=>di.classList.remove('bounce'),500);}
+  // Dot
+  var dot=document.querySelector('[data-win="'+id+'"] .dock-dot');
+  if(dot)dot.classList.add('on');
+  // If already open
+  if(WINS[id]){focusWin(id);var el=document.getElementById('w-'+id);if(el){el.style.display='flex';el.classList.remove('wmin');}return;}
+  var vw=window.innerWidth,vh=window.innerHeight;
+  var wx=ox!==undefined?ox:Math.max(20,Math.min(Math.random()*(vw-def.w-40)+20,vw-def.w-20));
+  var wy=oy!==undefined?oy:Math.max(40,Math.min(Math.random()*(vh-def.h-120)+40,vh-def.h-90));
+  var win=document.createElement('div');
+  win.className='win'; win.id='w-'+id; win.dataset.win=id;
+  win.style.cssText='left:'+wx+'px;top:'+wy+'px;width:'+def.w+'px;height:'+def.h+'px;';
+  win.innerHTML=
+    '<div class="win-bar" onmousedown="startDrag(event,\''+id+'\')">' +
+      '<div class="win-btns">' +
+        '<button class="wbtn cl" onclick="closeWin(\''+id+'\')">✕</button>' +
+        '<button class="wbtn mn" onclick="minWin(\''+id+'\')">−</button>' +
+        '<button class="wbtn mx" onclick="maxWin(\''+id+'\')">+</button>' +
+      '</div>' +
+      '<div class="win-title"><div class="win-title-icon">'+ICONS[id]+'</div>'+def.title+'</div>' +
+    '</div>' +
+    '<div class="win-body" id="wb-'+id+'"></div>';
+  document.getElementById('win-layer').appendChild(win);
+  win.addEventListener('mousedown',()=>focusWin(id));
+  WINS[id]={x:wx,y:wy,w:def.w,h:def.h,maxed:false};
+  def.build(document.getElementById('wb-'+id));
+  focusWin(id);
+  document.getElementById('mb-appname').textContent=def.title;
+  if(id==='terminal')setTimeout(runTerminal,200);
+}
+function closeWin(id){
+  var el=document.getElementById('w-'+id);if(!el)return;
+  el.classList.add('wclosing');
+  setTimeout(()=>{el.remove();delete WINS[id];var d=document.querySelector('[data-win="'+id+'"] .dock-dot');if(d)d.classList.remove('on');},220);
+}
+function minWin(id){
+  var el=document.getElementById('w-'+id);if(!el)return;
+  el.classList.add('wmin');setTimeout(()=>{el.style.display='none';el.classList.remove('wmin');},320);
+}
+function maxWin(id){
+  var w=WINS[id];if(!w)return;var el=document.getElementById('w-'+id);
+  if(w.maxed){
+    el.style.cssText='left:'+w.ox+'px;top:'+w.oy+'px;width:'+w.ow+'px;height:'+w.oh+'px;border-radius:12px;display:flex;flex-direction:column;transition:all .3s cubic-bezier(.16,1,.3,1);';
+    w.maxed=false;
+  } else {
+    w.ox=w.x;w.oy=w.y;w.ow=w.w;w.oh=w.h;
+    el.style.cssText='left:0;top:28px;width:100vw;height:calc(100vh - 110px);border-radius:0;display:flex;flex-direction:column;transition:all .3s cubic-bezier(.16,1,.3,1);';
+    w.maxed=true;
   }
-});
-document.addEventListener('mousedown',function(){cur.classList.add('clicking');});
-document.addEventListener('mouseup',function(){cur.classList.remove('clicking');});
+}
+function focusWin(id){
+  // id can be a string or an element
+  var winId = (typeof id === 'string') ? id : id.dataset.win;
+  // Remove priority-top from about when any OTHER window gets focused
+  if(winId !== 'about'){
+    var aboutWin=document.getElementById('w-about');
+    if(aboutWin) aboutWin.classList.remove('priority-top');
+  }
+  Object.keys(WINS).forEach(k=>{var e=document.getElementById('w-'+k);if(e)e.classList.remove('focused');});
+  var el=document.getElementById('w-'+winId);
+  if(el){el.classList.add('focused');el.style.zIndex=++Z;}
+}
+function startDrag(e,id){
+  if(e.target.classList.contains('wbtn'))return;
+  focusWin(id);
+  var r=document.getElementById('w-'+id).getBoundingClientRect();
+  DRAG={id,ox:e.clientX-r.left,oy:e.clientY-r.top};
+  document.addEventListener('mousemove',onDrag);
+  document.addEventListener('mouseup',stopDrag);
+  e.preventDefault();
+}
+function onDrag(e){
+  if(!DRAG)return;
+  var el=document.getElementById('w-'+DRAG.id);if(!el)return;
+  var nx=Math.max(0,Math.min(e.clientX-DRAG.ox,window.innerWidth-100));
+  var ny=Math.max(28,Math.min(e.clientY-DRAG.oy,window.innerHeight-60));
+  el.style.left=nx+'px';el.style.top=ny+'px';
+  if(WINS[DRAG.id]){WINS[DRAG.id].x=nx;WINS[DRAG.id].y=ny;}
+}
+function stopDrag(){DRAG=null;document.removeEventListener('mousemove',onDrag);document.removeEventListener('mouseup',stopDrag);}
 
-/* Cursor ring gradient follow */
-var hue=180;
-(function track(){
-  rx+=(mx-rx)*.1;ry+=(my-ry)*.1;
-  hue=(hue+.3)%360;
-  curR.style.left=rx+'px';curR.style.top=ry+'px';
-  curI.style.left=rx+'px';curI.style.top=ry+'px';
-  curI.style.borderColor='hsla('+hue+',70%,65%,0.4)';
-  requestAnimationFrame(track);
-})();
-
-cur.style.background='var(--white)';
-cur.style.mixBlendMode='difference';
-
-/* Cursor states */
-var heroEl=document.getElementById('hero');
-document.querySelectorAll('a,button,.sv-cell').forEach(function(el){
-  el.addEventListener('mouseenter',function(){curI.classList.add('over-link');});
-  el.addEventListener('mouseleave',function(){curI.classList.remove('over-link');});
-});
-if(heroEl){
-  heroEl.addEventListener('mouseenter',function(){curI.classList.add('over-hero');});
-  heroEl.addEventListener('mouseleave',function(){curI.classList.remove('over-hero');});
+/* ══════════════════════════════════════
+   CONTENT BUILDERS
+══════════════════════════════════════ */
+function buildFinder(el){
+  var rows=[
+    {id:'finder',lbl:'Finder'},{id:'about',lbl:'Sobre Mí'},{id:'projects',lbl:'Proyectos'},
+    {id:'services',lbl:'Servicios'},{id:'terminal',lbl:'Terminal'},
+    {id:'philosophy',lbl:'Filosofía'},
+  ];
+  var cells=[
+    {id:'projects',lbl:'Proyectos'},{id:'about',lbl:'Sobre Mí'},{id:'services',lbl:'Servicios'},
+    {id:'philosophy',lbl:'Filosofía'},{id:'terminal',lbl:'Terminal'},
+    {id:'ipod',lbl:'iPod Web'},{id:'saykyo',lbl:'Saykyo'},{id:'contact',lbl:'Contacto'},
+  ];
+  el.innerHTML=
+    '<div class="finder-wrap">'+
+      '<div class="finder-side">'+
+        '<div class="fs-sec">Favoritos</div>'+
+        rows.map(function(r,i){return '<div class="fs-row'+(i===0?' act':'')+ '" onclick="openWin(\''+r.id+'\')"><div class="fs-ic">'+ICONS[r.id]+'</div>'+r.lbl+'</div>';}).join('')+
+        '<div class="fs-sec">Proyectos</div>'+
+        '<div class="fs-row" onclick="openWin(\'ipod\')"><div class="fs-ic">'+ICONS.ipod+'</div>iPod Web</div>'+
+        '<div class="fs-row" onclick="openWin(\'saykyo\')"><div class="fs-ic">'+ICONS.saykyo+'</div>Saykyo App</div>'+
+      '</div>'+
+      '<div class="finder-main">'+
+        '<div style="font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Sotelo Studio — Workspace</div>'+
+        '<div class="icgrid">'+cells.map(c=>'<div class="gcell" onclick="openWin(\''+c.id+'\')"><div class="gc-img">'+ICONS[c.id]+'</div><div class="gc-lbl">'+c.lbl+'</div></div>').join('')+'</div>'+
+        '<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--sep);">'+
+          '<div style="font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Info del Sistema</div>'+
+          '<div class="info-row"><span class="ik">Sistema</span><span class="iv">Sotelo OS 1.0</span></div>'+
+          '<div class="info-row"><span class="ik">Ubicación</span><span class="iv">Tunja, Boyacá · COL</span></div>'+
+          '<div class="info-row"><span class="ik">Estado</span><span class="iv" style="color:var(--sys-green);">● Disponible 2026</span></div>'+
+          '<div class="info-row"><span class="ik">Contacto</span><span class="iv">yhasotelo@hotmail.com</span></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
 }
 
-/* ─── CURSOR TRAIL ─── */
-var trailPool=[];var trailN=14;
-for(var ti=0;ti<trailN;ti++){
-  var td=document.createElement('div');td.className='trail-dot';
-  var tc=ti%3===0?'var(--ac)':ti%3===1?'var(--mg)':'var(--green)';
-  td.style.background=tc;
-  document.body.appendChild(td);trailPool.push({el:td,x:0,y:0});
+function buildAbout(el){
+  el.style.background='#fff';
+  el.style.padding='20px';
+  el.innerHTML=
+      '<div style="display:flex;gap:20px;align-items:center;margin-bottom:22px;">'+
+        '<div class="about-av" style="width:80px;height:80px;border-radius:50%;overflow:hidden;flex-shrink:0;box-shadow:0 4px 20px rgba(0,122,255,.35),0 0 0 3px rgba(0,122,255,.15);">'+
+          '<img id="about-avatar-img" src="avatar.jpeg" alt="Sotelo" style="width:100%;height:100%;object-fit:cover;display:block;" '+
+          'onerror="this.style.display=\'none\';this.parentNode.innerHTML=\''+ICONS.about.replace(/'/g,"\\'").replace(/\n/g,'')+'\';">'+
+        '</div>'+
+        '<div>'+
+          '<div style="font-size:24px;font-weight:700;color:var(--t1);margin-bottom:2px;letter-spacing:-.02em;">Sotelo</div>'+
+          '<div style="font-size:13px;color:var(--t2);margin-bottom:10px;">Digital Craftsman · UI/UX · Dev</div>'+
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;">'+
+            '<span class="pill green">● Disponible 2026</span>'+
+            '<span class="pill blue">Tunja, CO</span>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<p style="font-size:13.5px;line-height:1.78;color:var(--t2);margin-bottom:14px;">Creativo digital en la intersección de <strong style="color:var(--t1)">diseño</strong>, <strong style="color:var(--t1)">código</strong> e <strong style="color:var(--t1)">identidad</strong>. Desde <strong style="color:var(--sys-blue)">Tunja, Boyacá</strong> — construyo experiencias que la gente recuerda antes de entender por qué las ama.</p>'+
+      '<p style="font-size:13.5px;line-height:1.78;color:var(--t2);margin-bottom:22px;">Cada proyecto empieza con una pregunta: <em style="color:var(--t1)">¿cómo hacemos esto de una manera que nadie haya visto antes?</em></p>'+
+      '<div style="display:flex;gap:10px;margin-bottom:20px;">'+
+        '<div class="stat-c"><div class="stat-n" style="color:var(--sys-blue)" id="sn1">0</div><div class="stat-l">Proyectos</div></div>'+
+        '<div class="stat-c"><div class="stat-n" style="color:var(--sys-purple)" id="sn2">0</div><div class="stat-l">Clientes</div></div>'+
+        '<div class="stat-c"><div class="stat-n" style="color:var(--sys-green)" id="sn3">0</div><div class="stat-l">Años</div></div>'+
+      '</div>'+
+    '</div>';
+  function cnt(id,t){var e=document.getElementById(id);if(!e)return;var c=0,inc=t/40;var ti=setInterval(()=>{c+=inc;if(c>=t){c=t;clearInterval(ti);}e.textContent=Math.round(c)+'+';},28);}
+  setTimeout(()=>{cnt('sn1',10);cnt('sn2',8);cnt('sn3',5);},300);
 }
-var trailPositions=[];
-document.addEventListener('mousemove',function(e){
-  trailPositions.unshift({x:e.clientX,y:e.clientY});
-  if(trailPositions.length>trailN)trailPositions.length=trailN;
-});
-(function trailLoop(){
-  requestAnimationFrame(trailLoop);
-  for(var i=0;i<trailN;i++){
-    var dot=trailPool[i];
-    if(trailPositions[i]){
-      dot.x+=(trailPositions[i].x-dot.x)*.22;
-      dot.y+=(trailPositions[i].y-dot.y)*.22;
-      var al=((trailN-i)/trailN)*0.18;
-      var sc=1-i/trailN*.65;
-      dot.el.style.cssText='left:'+dot.x+'px;top:'+dot.y+'px;opacity:'+al+';transform:translate(-50%,-50%) scale('+sc+');';
+
+function buildProjects(el){
+  el.style.background='#f2f2f7';
+  var isMob = window.innerWidth <= 1024;
+  var cards=[
+    {
+      num:'01',title:'Músico Colombiano',tag:'Música · Web Experience',
+      desc:'Un iPod interactivo nativo que contiene toda la identidad digital del artista — música, videos y biografía — dentro de un dispositivo icónico reimaginado para el browser.',
+      chips:['Web XP','UI/UX','CSS 3D','Music Player'],
+      grad:'linear-gradient(135deg,#FF2D55 0%,#AF52DE 100%)',
+      gradLight:'linear-gradient(135deg,rgba(255,45,85,.08) 0%,rgba(175,82,222,.08) 100%)',
+      accent:'#FF2D55',
+      ic:'ipod',win:'ipod',year:'2026'
+    },
+    {
+      num:'02',title:'Saykyo Training',tag:'Fitness Tech · App Design',
+      desc:'Plataforma de entrenamiento con gestión de rutinas, seguimiento con gráficas estratégicas, valoraciones corporales y analytics que convierten datos en resultados.',
+      chips:['App Design','UX Research','Data Viz','React Native'],
+      grad:'linear-gradient(135deg,#30D158 0%,#007AFF 100%)',
+      gradLight:'linear-gradient(135deg,rgba(48,209,88,.08) 0%,rgba(0,122,255,.08) 100%)',
+      accent:'#007AFF',
+      ic:'saykyo',win:'saykyo',year:'2026'
+    },
+  ];
+
+  if(isMob){
+    // ── MOBILE: full-width stacked cards, iOS native feel ──
+    el.innerHTML = `
+
+<div class="proj-mob-wrap">
+  <div class="proj-mob-header">
+    <div class="proj-mob-eyebrow">Portfolio</div>
+    <div class="proj-mob-title">Proyectos</div>
+  </div>
+  ${cards.map(c=>`
+  <div class="proj-mob-card" onclick="${isMob ? `openSheet('${c.win}')` : `openWin('${c.win}')`}">
+    <div class="proj-mob-hero" style="background:${c.grad}">
+      <div class="proj-mob-hero-shine"></div>
+      <div class="proj-mob-hero-icon">${ICONS[c.ic]}</div>
+      <div class="proj-mob-hero-badge">${c.year}</div>
+    </div>
+    <div class="proj-mob-body">
+      <div class="proj-mob-num">${c.num} — Proyecto</div>
+      <div class="proj-mob-name">${c.title}</div>
+      <div class="proj-mob-tag">${c.tag}</div>
+      <div class="proj-mob-desc">${c.desc}</div>
+      <div class="proj-mob-chips">
+        ${c.chips.map(ch=>`<span class="proj-mob-chip" style="color:${c.accent};border-color:${c.accent}22;background:${c.accent}0d;">${ch}</span>`).join('')}
+      </div>
+      <div class="proj-mob-cta" style="background:${c.grad};color:#fff;">
+        <span>Ver más sobre el proyecto</span>
+        <div class="proj-mob-cta-arrow" style="background:rgba(255,255,255,.25);opacity:1;">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M6 2.5l3.5 3.5L6 9.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>`).join('')}
+  <div class="proj-mob-coming">
+    <div style="font-size:28px;margin-bottom:8px;">🚀</div>
+    <div style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:4px;">Más proyectos en camino</div>
+    <div style="font-size:12px;color:var(--t3);font-family:var(--sf-mono);">Disponible para proyectos · 2026</div>
+  </div>
+</div>`;
+  } else {
+    // ── DESKTOP: 2-col grid ──
+    el.style.background='#fff';
+    el.innerHTML='<div class="pcards" style="padding:20px;">'+cards.map(c=>`
+      <div class="pcard" onclick="openWin('${c.win}')" style="cursor:pointer;">
+        <div class="pcard-head" style="background:${c.grad};min-height:110px;">
+          <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,transparent 60%);pointer-events:none;"></div>
+          <div style="width:52px;height:52px;border-radius:13px;overflow:hidden;position:relative;z-index:1;box-shadow:0 4px 16px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.3);">${ICONS[c.ic]}</div>
+          <div style="position:absolute;top:14px;right:14px;font-size:9px;font-family:var(--sf-mono);color:rgba(255,255,255,.55);letter-spacing:.08em;background:rgba(0,0,0,.2);padding:3px 8px;border-radius:6px;">${c.year}</div>
+        </div>
+        <div class="pcard-body">
+          <div class="pcard-num">${c.num}</div>
+          <div class="pcard-title">${c.title}</div>
+          <div style="font-size:11px;color:var(--t3);margin-bottom:8px;">${c.tag}</div>
+          <div class="pcard-desc">${c.desc}</div>
+          <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:4px;">${c.chips.map(x=>'<span class="chip">'+x+'</span>').join('')}</div>
+          <div style="margin-top:14px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sys-blue);font-weight:500;">
+            <span>Ver proyecto</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>`).join('')+
+      '<div style="grid-column:1/-1;background:rgba(0,0,0,.02);border:1.5px dashed rgba(0,0,0,.08);border-radius:14px;padding:24px;text-align:center;">'+
+        '<div style="font-size:20px;margin-bottom:6px;">🚀</div>'+
+        '<div style="font-size:12px;font-weight:600;color:var(--t2);">Más proyectos en camino</div>'+
+        '<div style="font-size:11px;color:var(--t3);font-family:var(--sf-mono);margin-top:4px;">Disponible para proyectos · 2026</div>'+
+      '</div>'+
+    '</div>';
+  }
+}
+
+function buildServices(el){
+  el.style.background='#fff';
+  var svcs=[
+    {ic:'gallery',bg:'linear-gradient(135deg,#007AFF,#5E5CE6)',n:'UI / UX Design',d:'Interfaces que generan emociones y conversiones reales.'},
+    {ic:'terminal',bg:'linear-gradient(135deg,#34C759,#007AFF)',n:'Desarrollo Web',d:'Código limpio, animaciones fluidas, experiencias que escalan.'},
+    {ic:'philosophy',bg:'linear-gradient(135deg,#AF52DE,#FF2D55)',n:'Identidad de Marca',d:'Sistemas visuales completos que comunican quién eres.'},
+    {ic:'ipod',bg:'linear-gradient(135deg,#FF9500,#FF2D55)',n:'Motion & 3D',d:'Animaciones 3D, WebGL y micro-interacciones de alto impacto.'},
+    {ic:'saykyo',bg:'linear-gradient(135deg,#5AC8FA,#007AFF)',n:'App Design',d:'De wireframes a prototipos interactivos listos para producción.'},
+    {ic:'contact',bg:'linear-gradient(135deg,#FFD60A,#FF9500)',n:'Consultoría',d:'Estrategia de producto, auditorías de marca y dirección creativa.'},
+  ];
+  el.innerHTML=
+    '<div style="padding:12px 16px 4px;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;">04 — Servicios · Lo que creo</div>'+
+    '<div class="svgrid">'+svcs.map(s=>`
+      <div class="svcell">
+        <div class="sv-ic" style="background:${s.bg}">${ICONS[s.ic]}</div>
+        <div class="sv-n">${s.n}</div>
+        <div class="sv-d">${s.d}</div>
+      </div>`).join('')+'</div>';
+}
+
+/* ── GALLERY — dynamic photo loader ── */
+var GAL_PHOTOS = [];
+var LB_IDX = 0;
+
+function buildGallery(el){
+  // Photos: tries 1.jpg, 2.jpg … 1.png, 2.png etc.
+  // We show a loading state then dynamically detect which files exist
+  el.innerHTML=
+    '<div class="gal-toolbar">'+
+      '<span id="gal-count" style="color:var(--t2);">Cargando fotos…</span>'+
+      '<span style="font-size:11px;font-family:var(--sf-mono);">Proyectos · Sotelo Studio</span>'+
+    '</div>'+
+    '<div id="gal-grid-inner"></div>';
+  loadGalleryPhotos(document.getElementById('gal-grid-inner'), document.getElementById('gal-count'));
+}
+
+function loadGalleryPhotos(grid, counter){
+  // Attempt to load images 1–20 (both .jpg and .png)
+  var total=20, loaded=[], failed=0, tried=0;
+  var names=[];
+  for(var i=1;i<=total;i++){names.push({n:i,exts:['jpg','jpeg','png','webp']});}
+
+  function tryLoad(item, extIdx){
+    if(extIdx>=item.exts.length){failed++;check();return;}
+    var img=new Image();
+    var src=item.n+'.'+item.exts[extIdx];
+    img.onload=function(){
+      loaded.push({src:src,label:'Proyecto '+item.n,idx:loaded.length});
+      renderGallery(grid,counter);
+      check();
+    };
+    img.onerror=function(){ tryLoad(item,extIdx+1); };
+    img.src=src;
+  }
+  function check(){
+    tried++;
+    if(tried===total){
+      if(loaded.length===0) showEmptyGallery(grid,counter);
     }
   }
-})();
-
-/* ─── LOADER ─── */
-var ldBar=document.getElementById('ld-bar');
-var ldPct=document.getElementById('ld-pct');
-var loaderEl=document.getElementById('loader');
-var pct=0;
-var ldTimer=setInterval(function(){
-  pct+=Math.random()*9+4;
-  if(pct>=100){pct=100;clearInterval(ldTimer);setTimeout(boot,500);}
-  ldBar.style.width=pct+'%';
-  ldPct.textContent=Math.round(pct)+'%';
-},70);
-
-/* ─── SCRAMBLE TEXT ─── */
-var chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%';
-function scramble(el,target,duration){
-  var start=null;
-  var len=target.length;
-  function step(ts){
-    if(!start)start=ts;
-    var p=Math.min((ts-start)/duration,1);
-    var revealed=Math.floor(p*len);
-    var out='';
-    for(var i=0;i<len;i++){
-      if(i<revealed){out+=target[i];}
-      else{out+=chars[Math.floor(Math.random()*chars.length)];}
-    }
-    el.textContent=out;
-    if(p<1)requestAnimationFrame(step);
-    else el.textContent=target;
+  names.forEach(function(item){ tryLoad(item,0); });
+  // Also try /photos/ subfolder
+  for(var j=1;j<=10;j++){
+    (function(n){
+      var img=new Image(); img.src='photos/'+n+'.jpg';
+      img.onload=function(){
+        loaded.push({src:'photos/'+n+'.jpg',label:'Foto '+n,idx:loaded.length});
+        renderGallery(grid,counter);
+      };
+    })(j);
   }
-  requestAnimationFrame(step);
 }
 
-function boot(){
-  loaderEl.classList.add('gone');
-  ['h-location','h-eye','h-title','h-sub','h-btns','h-clock'].forEach(function(id){
-    var el=document.getElementById(id);
-    if(el)el.classList.add('h-show');
-  });
-  var hs=document.getElementById('h-scroll');
-  if(hs)hs.classList.add('h-show');
-  setTimeout(function(){
-    var sc=document.getElementById('hero-scramble');
-    if(sc)scramble(sc,'Craftsman',1400);
-  },2600);
-  initHero();
-  initInterlude();
-  initAbout3D();
-  buildBars();
-  initReveal();
-  initCounters();
-  initMagnetic();
-  initScrollFX();
-  initServiceHover();
-  initEasterEgg();
+function renderGallery(grid, counter){
+  GAL_PHOTOS = grid._photos = (grid._photos||[]);
+  // Avoid duplicates
+  var existingSrcs = GAL_PHOTOS.map(p=>p.src);
+  // This gets called on each success, rebuild sorted
+  if(!grid._all) grid._all=[];
+  counter.textContent = GAL_PHOTOS.length > 0 ? GAL_PHOTOS.length+' foto'+(GAL_PHOTOS.length!==1?'s':'') : 'Cargando…';
+  grid.className='gal-grid';
+  grid.innerHTML=GAL_PHOTOS.map((p,i)=>`
+    <div class="gal-cell" onclick="openLB(${i})">
+      <img src="${p.src}" alt="${p.label}" loading="lazy">
+      <div class="gal-cap"><span class="gal-cap-txt">${p.label}</span></div>
+    </div>`).join('');
 }
 
-/* ─── NAV ─── */
-window.addEventListener('scroll',function(){
-  document.getElementById('nav').classList.toggle('solid',window.scrollY>60);
+// Call this when a new photo loads successfully
+function addGalleryPhoto(src, label){
+  // Check duplicates
+  if(GAL_PHOTOS.find(p=>p.src===src)) return;
+  GAL_PHOTOS.push({src,label,idx:GAL_PHOTOS.length});
+  // Re-render any open gallery
+  var grid=document.getElementById('gal-grid-inner');
+  var counter=document.getElementById('gal-count');
+  if(grid&&counter){ grid._photos=GAL_PHOTOS; renderGallery(grid,counter); }
+}
+
+function showEmptyGallery(grid, counter){
+  counter.textContent='Sin fotos';
+  grid.innerHTML=
+    '<div class="gal-empty">'+
+      '<svg class="gal-empty-icon" viewBox="0 0 60 60" fill="none"><rect x="6" y="10" width="48" height="40" rx="6" stroke="rgba(0,0,0,.5)" stroke-width="2"/><circle cx="20" cy="24" r="5" stroke="rgba(0,0,0,.5)" stroke-width="2"/><path d="M6 38l12-10 10 8 8-6 18 12" stroke="rgba(0,0,0,.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
+      '<div style="font-size:16px;font-weight:600;color:var(--t1);">Sin fotos aún</div>'+
+      '<div style="font-size:13px;color:var(--t2);max-width:260px;">Pon tus fotos con nombres 1.jpg, 2.jpg, 3.png… en la misma carpeta que este archivo.</div>'+
+    '</div>';
+}
+
+/* Lightbox */
+function openLB(idx){
+  LB_IDX=idx;
+  var p=GAL_PHOTOS[idx];if(!p)return;
+  document.getElementById('lb-img').src=p.src;
+  document.getElementById('lb-caption').textContent=p.label+' · '+(idx+1)+'/'+GAL_PHOTOS.length;
+  document.getElementById('lightbox').classList.add('on');
+}
+function closeLB(){document.getElementById('lightbox').classList.remove('on');}
+function lbNav(dir){
+  LB_IDX=(LB_IDX+dir+GAL_PHOTOS.length)%GAL_PHOTOS.length;
+  openLB(LB_IDX);
+}
+document.getElementById('lightbox').addEventListener('click',function(e){if(e.target===this)closeLB();});
+document.addEventListener('keydown',function(e){
+  if(document.getElementById('lightbox').classList.contains('on')){
+    if(e.key==='ArrowLeft')lbNav(-1);
+    if(e.key==='ArrowRight')lbNav(1);
+    if(e.key==='Escape')closeLB();
+  }
 });
 
-/* ─── HERO CANVAS ─── */
-function initHero(){
-  var canvas=document.getElementById('hero-canvas');if(!canvas)return;
-  var ctx=canvas.getContext('2d');
-  var W,H;
-  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
-  resize();window.addEventListener('resize',resize);
-  var pts=[];
-  var ptColors=['rgba(77,184,200,','rgba(224,64,251,','rgba(93,223,168,','rgba(45,143,160,'];
-  for(var i=0;i<130;i++){
-    pts.push({
-      x:Math.random()*1920,y:Math.random()*1080,
-      vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,
-      r:Math.random()*.9+.2,
-      color:ptColors[Math.floor(Math.random()*ptColors.length)]
-    });
+function buildTerminal(el){
+  el.innerHTML='<div class="term-bg" id="term-out"></div>';
+}
+var TLINES=[
+  {p:'clear'},{p:'whoami'},{o:'sotelo — digital craftsman',c:'gr'},
+  {p:'cat perfil.json'},{o:'{',c:'bl'},
+  {o:'  "nombre":    "Sotelo",',c:'bl'},{o:'  "rol":       "UI Designer & Developer",',c:'bl'},
+  {o:'  "ubicacion": "Tunja, Boyacá · Colombia",',c:'bl'},
+  {o:'  "stack":     ["Figma","React","Three.js","CSS"],',c:'bl'},
+  {o:'  "disponible": true',c:'gr'},{o:'}',c:'bl'},
+  {p:'ls proyectos/'},{o:'01_musico-colombiano/   02_saykyo-app/',c:'yw'},
+  {p:'cat filosofia.txt'},{o:'"El mejor diseño es aquel que desaparece —',c:'pk'},{o:' dejando solo la experiencia pura."',c:'pk'},
+  {p:'ping yhasotelo@hotmail.com'},{o:'PING sotelo [disponible 2026] — 0ms response',c:'gr'},{cursor:true}
+];
+function runTerminal(){
+  var out=document.getElementById('term-out');if(!out)return;
+  out.innerHTML='';var i=0;
+  function next(){
+    if(i>=TLINES.length)return; var l=TLINES[i++];
+    var d=document.createElement('div'); d.style.marginBottom='1px';
+    if(l.cursor) d.innerHTML='<span class="tp">sotelo@studio:~$</span> <span class="tcur"></span>';
+    else if(l.p!==undefined) d.innerHTML='<span class="tp">sotelo@studio:~$</span> <span class="tc"> '+l.p+'</span>';
+    else d.innerHTML='<span class="to '+(l.c||'')+'">'+l.o+'</span>';
+    out.appendChild(d); out.scrollTop=out.scrollHeight;
+    setTimeout(next,l.p!==undefined?160:55);
   }
-  var pmx=960,pmy=540;
-  document.addEventListener('mousemove',function(e){pmx=e.clientX;pmy=e.clientY;});
-  var t=0;
-  (function loop(){
-    requestAnimationFrame(loop);t+=.007;
-    ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='rgba(77,184,200,0.025)';ctx.lineWidth=1;
-    for(var x=0;x<W;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-    for(var y=0;y<H;y+=80){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-    var vg=ctx.createRadialGradient(W/2,H/2,H*.1,W/2,H/2,H*.9);
-    vg.addColorStop(0,'transparent');vg.addColorStop(1,'rgba(7,7,26,.82)');
-    ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
-    var grd=ctx.createRadialGradient(pmx,pmy,0,pmx,pmy,280);
-    grd.addColorStop(0,'rgba(77,184,200,0.045)');
-    grd.addColorStop(.5,'rgba(224,64,251,0.02)');
-    grd.addColorStop(1,'transparent');
-    ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
-    for(var i=0;i<pts.length;i++){
-      var p=pts[i];
-      p.x+=p.vx+(pmx-W/2)*.00008;p.y+=p.vy+(pmy-H/2)*.00008;
-      if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
-      var dist=Math.sqrt((p.x-pmx)*(p.x-pmx)+(p.y-pmy)*(p.y-pmy));
-      var glow=Math.max(0,1-dist/220);
-      var alpha=.1+Math.sin(t+p.x*.008)*.07+glow*.6;
-      ctx.beginPath();ctx.arc(p.x,p.y,p.r+glow*.6,0,Math.PI*2);
-      ctx.fillStyle=p.color+alpha+')';ctx.fill();
-    }
-    for(var i=0;i<pts.length;i++){
-      for(var j=i+1;j<pts.length;j++){
-        var dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y;
-        var d=Math.sqrt(dx*dx+dy*dy);
-        if(d<95){
-          var grad=ctx.createLinearGradient(pts[i].x,pts[i].y,pts[j].x,pts[j].y);
-          var al=(0.08*(1-d/95));
-          grad.addColorStop(0,'rgba(77,184,200,'+al+')');
-          grad.addColorStop(1,'rgba(224,64,251,'+(al*.7)+')');
-          ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
-          ctx.strokeStyle=grad;ctx.lineWidth=.5;ctx.stroke();
-        }
-      }
-    }
+  setTimeout(next,300);
+}
+
+function buildContact(el){
+  el.style.background='#fff';
+  el.innerHTML=
+    '<div class="cpad" style="display:flex;flex-direction:column;gap:18px;">'+
+      '<div><div style="font-size:11px;font-weight:600;color:var(--sys-blue);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">05 — Contacto</div>'+
+      '<div style="font-size:28px;font-weight:700;color:var(--t1);line-height:1.15;">Hagamos algo<br><span style="color:var(--sys-blue)">increíble.</span></div></div>'+
+      '<span class="pill green" style="width:fit-content;">● Disponible para proyectos 2026</span>'+
+      '<a href="mailto:yhasotelo@hotmail.com" class="ct-email-row">'+
+        '<div class="ct-em-icon">'+ICONS.contact+'</div>'+
+        '<div><div style="font-size:15px;font-weight:500;color:var(--sys-blue);">yhasotelo@hotmail.com</div><div style="font-size:12px;color:var(--t2);margin-top:1px;">Respuesta en menos de 24h</div></div>'+
+      '</a>'+
+      '<div style="font-size:13px;color:var(--t2);">◎ Tunja, Boyacá · Colombia · COL</div>'+
+      '<div style="border-top:1px solid var(--sep);padding-top:16px;display:flex;justify-content:space-between;font-size:11px;color:var(--t3);">'+
+        '<span>© 2026 Sotelo Studio</span><span>Hecho con obsesión · Colombia</span>'+
+      '</div>'+
+    '</div>';
+}
+
+function buildPhilosophy(el){
+  el.style.background='#f2f2f7';
+  el.innerHTML=
+    '<div style="padding:0 0 32px;">'+
+      // Hero section
+      '<div style="background:#fff;padding:24px 20px 20px;margin-bottom:10px;">'+
+        '<div style="font-size:11px;font-weight:600;color:var(--sys-blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Filosofía</div>'+
+        '<div style="font-size:28px;font-weight:700;color:var(--t1);line-height:1.18;letter-spacing:-.02em;margin-bottom:6px;">El diseño que <span style="color:var(--sys-purple)">desaparece.</span></div>'+
+        '<div style="font-size:14px;color:var(--t2);line-height:1.5;">UI Designer & Developer · Tunja, Boyacá</div>'+
+      '</div>'+
+      // Quote card
+      '<div style="margin:0 16px 10px;">'+
+        '<div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.06);">'+
+          '<div style="background:linear-gradient(135deg,#AF52DE,#5E5CE6);padding:18px 20px;">'+
+            '<div style="font-size:32px;line-height:1;color:rgba(255,255,255,.4);font-family:Georgia,serif;margin-bottom:4px;">"</div>'+
+            '<div style="font-size:16px;font-style:italic;color:#fff;line-height:1.55;font-weight:400;">El mejor diseño es aquel que desaparece — dejando solo la experiencia pura.</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      // Paragraphs as iOS grouped list
+      '<div style="margin:0 16px 10px;">'+
+        '<div style="font-size:11px;font-weight:600;color:rgba(60,60,67,.6);text-transform:uppercase;letter-spacing:.06em;padding:8px 4px 6px;">Manifiesto</div>'+
+        '<div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.06);">'+
+          '<div style="padding:14px 16px;border-bottom:1px solid rgba(0,0,0,.06);">'+
+            '<div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:4px;">Pixel con propósito</div>'+
+            '<div style="font-size:13px;color:var(--t2);line-height:1.55;">Cada pixel tiene propósito. Cada interacción cuenta una historia. Trabajo donde la tecnología se vuelve emoción.</div>'+
+          '</div>'+
+          '<div style="padding:14px 16px;">'+
+            '<div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:4px;">Lenguaje visual propio</div>'+
+            '<div style="font-size:13px;color:var(--t2);line-height:1.55;">No persigo tendencias — creo lenguajes visuales que resisten el tiempo. El código es mi pincel, el browser mi lienzo.</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      // Stack pills as iOS grouped
+      '<div style="margin:0 16px 10px;">'+
+        '<div style="font-size:11px;font-weight:600;color:rgba(60,60,67,.6);text-transform:uppercase;letter-spacing:.06em;padding:8px 4px 6px;">Stack</div>'+
+        '<div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.06);">'+
+          ['Figma','React','Three.js','CSS','UI/UX'].map((s,i,arr)=>
+            '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;'+
+            (i<arr.length-1?'border-bottom:1px solid rgba(0,0,0,.06);':'')+'">'+
+              '<div style="font-size:14px;color:var(--t1);">'+s+'</div>'+
+              '<svg width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M1 1l5 5-5 5" stroke="rgba(0,0,0,.25)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
+            '</div>'
+          ).join('')+
+        '</div>'+
+      '</div>'+
+      // Footer
+      '<div style="padding:10px 20px;">'+
+        '<div style="font-size:12px;color:rgba(60,60,67,.45);text-align:center;font-family:var(--sf-mono);">Construido desde Tunja, Boyacá · 2026</div>'+
+      '</div>'+
+    '</div>';
+}
+
+function buildIpod(el){
+  el.style.background='linear-gradient(160deg,#0d0d18 0%,#1a0530 50%,#0a1020 100%)';
+  el.style.height='100%';
+  el.style.overflow='auto';
+
+  el.innerHTML=`
+
+<div class="ip-wrap">
+  <div class="ip-device-showcase">
+    <div class="ip-badge">Proyecto 01</div>
+    <div class="ip-body">
+      <div class="ip-screen-shell">
+        <div class="ip-screen">
+          <div class="ip-scan"></div>
+          <div class="ip-screen-top"><span>✦ Sotelo iPod</span><span id="ip-clock">--:--</span></div>
+          <div class="ip-screen-title">Músico Colombiano</div>
+          <div class="ip-screen-sub">Web Experience · 2026</div>
+          <div class="ip-screen-bar"><div class="ip-screen-fill"></div></div>
+          <div class="ip-screen-times"><span>1:14</span><span>3:42</span></div>
+        </div>
+      </div>
+      <div class="ip-wheel">
+        <span class="ip-wlbl ip-wl-t">MENU</span>
+        <span class="ip-wlbl ip-wl-b">▶|◀</span>
+        <span class="ip-wlbl ip-wl-l">◄◄</span>
+        <span class="ip-wlbl ip-wl-r">▶▶</span>
+        <div class="ip-wctr"></div>
+      </div>
+      <div class="ip-logo">♦ SOTELO STUDIO</div>
+    </div>
+  </div>
+
+  <div class="ip-info">
+    <div class="ip-project-num">01 — Proyecto</div>
+    <div class="ip-project-title">Músico<br>Colombiano</div>
+    <div class="ip-project-sub">Web Experience · Música · UI/UX</div>
+    <div class="ip-project-desc">
+      Un iPod interactivo nativo que contiene toda la identidad digital del artista — música, videos y biografía — dentro de un dispositivo icónico reimaginado para el browser.
+    </div>
+    <div class="ip-chips">
+      <span class="ip-chip">Web XP</span>
+      <span class="ip-chip">UI/UX</span>
+      <span class="ip-chip">CSS 3D</span>
+      <span class="ip-chip">Music Player</span>
+    </div>
+    <div class="ip-divider"></div>
+    <div class="ip-highlight">
+      <div class="ip-hl-ic">🎵</div>
+      <div><div class="ip-hl-t">Player de audio nativo</div><div class="ip-hl-d">MP3 directamente en el browser, sin dependencias</div></div>
+    </div>
+    <div class="ip-highlight">
+      <div class="ip-hl-ic">🎛️</div>
+      <div><div class="ip-hl-t">Click-wheel funcional</div><div class="ip-hl-d">Navegación por rueda giratoria como el iPod original</div></div>
+    </div>
+    <div class="ip-highlight">
+      <div class="ip-hl-ic">📱</div>
+      <div><div class="ip-hl-t">Identidad visual completa</div><div class="ip-hl-d">Diseño que comunica la esencia del artista</div></div>
+    </div>
+  </div>
+</div>
+`;
+  // Start clock after HTML is injected
+  (function(){
+    function t(){var now=new Date();var h=now.getHours().toString().padStart(2,'0');var m=now.getMinutes().toString().padStart(2,'0');var clk=document.getElementById('ip-clock');if(clk)clk.textContent=h+':'+m;}
+    t(); setInterval(t,1000);
   })();
-  window.addEventListener('scroll',function(){
-    var hi=document.getElementById('hero-inner');
-    if(hi&&window.scrollY<window.innerHeight)hi.style.transform='translateY('+(window.scrollY*.22)+'px)';
+}
+
+
+function buildSaykyo(el){
+  el.style.background='linear-gradient(160deg,#030310 0%,#0a0a20 40%,#050515 100%)';
+  el.style.height='100%';
+  el.style.overflow='auto';
+
+  el.innerHTML=`
+
+<div class="sk-wrap">
+  <div class="sk-device-showcase">
+    <div class="sk-badge">Proyecto 02</div>
+    <div class="sk-iphone">
+      <div class="sk-screen-wrap">
+        <div class="sk-di"></div>
+        <div class="sk-app">
+          <div class="sk-app-header">
+            <div class="sk-app-logo">SAY<span>|</span>KYO</div>
+            <div class="sk-app-avatar">YS</div>
+          </div>
+          <!-- Ring -->
+          <div class="sk-ring-row">
+            <svg class="sk-ring-svg" width="44" height="44" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="16" stroke="rgba(255,255,255,.08)" stroke-width="4" fill="none"/>
+              <circle cx="22" cy="22" r="16" stroke="#30D158" stroke-width="4" fill="none"
+                stroke-dasharray="73 28" stroke-dashoffset="20" stroke-linecap="round"/>
+              <text x="22" y="26" text-anchor="middle" font-size="9" font-weight="700" fill="white" font-family="monospace">73%</text>
+            </svg>
+            <div class="sk-ring-info">
+              <div class="sk-ring-title">Asistencia del mes</div>
+              <div class="sk-ring-val">4 días</div>
+              <div class="sk-ring-sub">Racha actual · Récord: 4</div>
+            </div>
+          </div>
+          <!-- Mini stats -->
+          <div class="sk-mini-stats">
+            <div class="sk-ms"><div class="sk-ms-v" style="color:#f97316">🔥 4</div><div class="sk-ms-l">Racha</div></div>
+            <div class="sk-ms"><div class="sk-ms-v" style="color:#a855f7">22</div><div class="sk-ms-l">Series hoy</div></div>
+          </div>
+          <!-- Bar chart -->
+          <div class="sk-chart-wrap">
+            <div class="sk-chart-label">Semana actual</div>
+            <div class="sk-bars">
+              ${[0.9,0.6,0.85,0.5,0.7,0,0].map((v,i)=>`<div class="sk-bar" style="height:${Math.max(v*100,8)}%;background:${v>0?'linear-gradient(180deg,#30D158,#007AFF)':'rgba(255,255,255,.06)'}"></div>`).join('')}
+            </div>
+          </div>
+          <!-- Bottom nav -->
+          <div style="flex:1;"></div>
+          <div class="sk-bnav">
+            <div class="sk-bnav-ic act"><span>🏋️</span><div class="sk-bnav-lbl" style="color:#30D158;">Entrenar</div></div>
+            <div class="sk-bnav-ic"><span>📈</span><div class="sk-bnav-lbl">Progreso</div></div>
+            <div class="sk-bnav-ic"><span>👤</span><div class="sk-bnav-lbl">Perfil</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sk-info">
+    <div class="sk-proj-num">02 — Proyecto</div>
+    <div class="sk-proj-title">Saykyo<br>Training</div>
+    <div class="sk-proj-sub">Fitness Tech · App Design · Data Viz</div>
+    <div class="sk-proj-desc">
+      Plataforma de entrenamiento con gestión de rutinas, seguimiento con gráficas estratégicas, valoraciones corporales y analytics que convierten datos en resultados reales.
+    </div>
+    <div class="sk-chips2">
+      <span class="sk-chip2">App Design</span>
+      <span class="sk-chip2">UX Research</span>
+      <span class="sk-chip2">Data Viz</span>
+      <span class="sk-chip2">React Native</span>
+    </div>
+    <div class="sk-divider2"></div>
+    <div class="sk-highlight2">
+      <div class="sk-hl-ic2">📊</div>
+      <div><div class="sk-hl-t2">Analytics en tiempo real</div><div class="sk-hl-d2">Gráficas de progreso, rachas y métricas corporales</div></div>
+    </div>
+    <div class="sk-highlight2">
+      <div class="sk-hl-ic2">⚡</div>
+      <div><div class="sk-hl-t2">Gestión de rutinas RPE</div><div class="sk-hl-d2">Seguimiento por percepción de esfuerzo por ejercicio</div></div>
+    </div>
+    <div class="sk-highlight2">
+      <div class="sk-hl-ic2">🎯</div>
+      <div><div class="sk-hl-t2">Valoración corporal</div><div class="sk-hl-d2">Seguimiento de composición, peso y métricas del cuerpo</div></div>
+    </div>
+  </div>
+</div>
+`;
+}
+
+
+/* ══════════════════════════════════════
+   DESKTOP ICONS
+══════════════════════════════════════ */
+var DESK_ICONS=[
+  {id:'about',    lbl:'Sobre Mí',  x:20, y:20},
+  {id:'projects', lbl:'Proyectos', x:20, y:118},
+  {id:'services', lbl:'Servicios', x:20, y:216},
+  {id:'philosophy',lbl:'Filosofía',x:20, y:314},
+];
+function buildDesktop(){
+  var desk=document.getElementById('desktop');
+  DESK_ICONS.forEach(function(d){
+    var el=document.createElement('div');
+    el.className='desk-icon'; el.dataset.id=d.id;
+    el.style.left=d.x+'px'; el.style.top=d.y+'px';
+    el.innerHTML='<div class="di-img">'+ICONS[d.id]+'</div><div class="di-label">'+d.lbl+'</div>';
+    var clickTimer=null;
+    el.addEventListener('click',function(){
+      document.querySelectorAll('.desk-icon').forEach(x=>x.classList.remove('sel'));
+      el.classList.add('sel');
+      if(clickTimer){clearTimeout(clickTimer);clickTimer=null;openWin(d.id);}
+      else{clickTimer=setTimeout(function(){clickTimer=null;openWin(d.id);},250);}
+    });
+    desk.appendChild(el);
   });
 }
 
-/* ─── INTERLUDE 3D ─── */
-function initInterlude(){
-  if(typeof THREE==='undefined')return;
-  var canvas=document.getElementById('scene-canvas');if(!canvas)return;
-  var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
-  renderer.setSize(window.innerWidth,window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  var scene=new THREE.Scene();
-  var cam=new THREE.PerspectiveCamera(65,window.innerWidth/window.innerHeight,.1,100);
-  cam.position.set(0,0,4.5);
-  scene.add(new THREE.AmbientLight(0xffffff,.3));
-  var pl1=new THREE.PointLight(0x4db8c8,4,18);pl1.position.set(3,2,3);scene.add(pl1);
-  var pl2=new THREE.PointLight(0xe040fb,2.5,14);pl2.position.set(-3,-2,2);scene.add(pl2);
-  var pl3=new THREE.PointLight(0x5ddfa8,1.5,10);pl3.position.set(0,3,-2);scene.add(pl3);
-  var tk=new THREE.Mesh(new THREE.TorusKnotGeometry(1.2,.08,200,18,3,5),
-    new THREE.MeshStandardMaterial({color:0x0d0d22,metalness:.96,roughness:.04}));scene.add(tk);
-  var tkW=new THREE.Mesh(new THREE.TorusKnotGeometry(1.22,.082,200,18,3,5),
-    new THREE.MeshBasicMaterial({color:0x4db8c8,wireframe:true,transparent:true,opacity:.08}));scene.add(tkW);
-  var tkW2=new THREE.Mesh(new THREE.TorusKnotGeometry(1.25,.08,200,18,3,5),
-    new THREE.MeshBasicMaterial({color:0xe040fb,wireframe:true,transparent:true,opacity:.04}));scene.add(tkW2);
-  var pGeo=new THREE.BufferGeometry();
-  var pPos=new Float32Array(300*3);
-  var pColors=new Float32Array(300*3);
-  for(var i=0;i<300;i++){
-    var a=Math.random()*Math.PI*2,r=2.2+Math.random()*4;
-    pPos[i*3]=Math.cos(a)*r;pPos[i*3+1]=(Math.random()-.5)*7;pPos[i*3+2]=Math.sin(a)*r-3;
-    var mix=Math.random();
-    pColors[i*3]=mix*.3+(1-mix)*.88;pColors[i*3+1]=mix*.72+(1-mix)*.25;pColors[i*3+2]=mix*.79+(1-mix)*.98;
-  }
-  pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
-  pGeo.setAttribute('color',new THREE.BufferAttribute(pColors,3));
-  scene.add(new THREE.Points(pGeo,new THREE.PointsMaterial({size:.035,vertexColors:true,transparent:true,opacity:.5})));
-  var tmx=0,tmy=0,t=0,running=false;
-  document.addEventListener('mousemove',function(e){tmx=(e.clientX/window.innerWidth-.5);tmy=-(e.clientY/window.innerHeight-.5);});
-  window.addEventListener('resize',function(){cam.aspect=window.innerWidth/window.innerHeight;cam.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
-  var obs=new IntersectionObserver(function(entries){
-    if(entries[0].isIntersecting&&!running){running=true;
-      (function loop(){if(!running)return;requestAnimationFrame(loop);t+=.005;
-        tk.rotation.y+=.006;tk.rotation.x=.3+Math.sin(t)*.1;
-        tkW.rotation.y=tk.rotation.y;tkW.rotation.x=tk.rotation.x;
-        tkW2.rotation.y=tk.rotation.y+.3;tkW2.rotation.x=tk.rotation.x;
-        cam.position.x+=(tmx*2-cam.position.x)*.05;cam.position.y+=(tmy*1.5-cam.position.y)*.05;
-        cam.lookAt(scene.position);
-        pl1.position.x=Math.sin(t*1.3)*3;pl1.position.y=Math.cos(t*.9)*2;
-        pl2.position.x=Math.cos(t*.8)*3;pl2.position.y=Math.sin(t*1.1)*2;
-        renderer.render(scene,cam);})();
-    }else if(!entries[0].isIntersecting){running=false;}
-  },{threshold:.1});
-  obs.observe(document.getElementById('interlude'));
-}
-
-/* ─── ABOUT 3D ─── */
-function initAbout3D(){
-  if(typeof THREE==='undefined')return;
-  var canvas=document.getElementById('about-canvas');if(!canvas)return;
-  var W=canvas.offsetWidth,H=canvas.offsetHeight;if(!W||!H)return;
-  var renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
-  renderer.setSize(W,H);renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  var scene=new THREE.Scene();
-  var cam=new THREE.PerspectiveCamera(58,W/H,.1,50);cam.position.set(0,0,4);
-  scene.add(new THREE.AmbientLight(0xffffff,.3));
-  var pl=new THREE.PointLight(0x4db8c8,3,16);pl.position.set(2,2,3);scene.add(pl);
-  var pl2=new THREE.PointLight(0xe040fb,2,12);pl2.position.set(-3,-1,2);scene.add(pl2);
-  var pl3=new THREE.PointLight(0x5ddfa8,1,8);pl3.position.set(1,-3,1);scene.add(pl3);
-  var oct=new THREE.Mesh(new THREE.OctahedronGeometry(1.3,1),new THREE.MeshStandardMaterial({color:0x0e0e26,metalness:.95,roughness:.05}));scene.add(oct);
-  var octW=new THREE.Mesh(new THREE.OctahedronGeometry(1.32,1),new THREE.MeshBasicMaterial({color:0x4db8c8,wireframe:true,transparent:true,opacity:.12}));scene.add(octW);
-  var octW2=new THREE.Mesh(new THREE.OctahedronGeometry(1.36,1),new THREE.MeshBasicMaterial({color:0xe040fb,wireframe:true,transparent:true,opacity:.05}));scene.add(octW2);
-  [1.9,2.6,3.3].forEach(function(r,i){
-    var col=[0x4db8c8,0xe040fb,0x5ddfa8][i];
-    var ring=new THREE.Mesh(new THREE.TorusGeometry(r,.005,8,80),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.07-.01*i}));
-    ring.rotation.x=Math.PI/3*i;scene.add(ring);
-  });
-  var lx=0,ly=0,t=0;
-  canvas.addEventListener('mousemove',function(e){var rc=canvas.getBoundingClientRect();lx=(e.clientX-rc.left)/W-.5;ly=-((e.clientY-rc.top)/H-.5);});
-  (function loop(){requestAnimationFrame(loop);t+=.006;
-    oct.rotation.y+=.005;oct.rotation.x=Math.sin(t)*.18;
-    octW.rotation.y=oct.rotation.y;octW.rotation.x=oct.rotation.x;
-    octW2.rotation.y=oct.rotation.y-.2;octW2.rotation.x=oct.rotation.x;
-    pl.position.x=Math.sin(t)*2.5;pl.position.y=Math.cos(t*.8)*2;
-    pl2.position.x=Math.cos(t*.9)*2.5;pl2.position.y=Math.sin(t*1.1)*2;
-    cam.position.x+=(lx*1.5-cam.position.x)*.06;cam.position.y+=(ly-cam.position.y)*.06;
-    cam.lookAt(scene.position);renderer.render(scene,cam);})();
-}
-
-/* ─── PHONE BARS ─── */
-function buildBars(){
-  var c=document.getElementById('phi-bars');if(!c)return;
-  var vals=[55,80,42,92,66,50,88];
-  vals.forEach(function(v,i){
-    var b=document.createElement('div');b.className='phi-bar';
-    var hue=160+i*8;
-    b.style.cssText='height:'+Math.round(v*.33)+'px;background:hsl('+hue+',70%,58%);opacity:'+(0.4+v/220)+';border-radius:2px 2px 0 0;box-shadow:0 0 6px hsla('+hue+',70%,58%,.3);';
-    c.appendChild(b);
+/* ══════════════════════════════════════
+   DOCK BUILD
+══════════════════════════════════════ */
+var DOCK_APPS=[
+  {id:'finder', lbl:'Finder'},
+  {id:'about',  lbl:'Sobre Mí'},
+  {id:'projects',lbl:'Proyectos'},
+  {id:'services',lbl:'Servicios'},
+  {id:'terminal',lbl:'Terminal'},
+  null, // separator
+  {id:'contact', lbl:'Contacto'},
+];
+function buildDock(){
+  var dock=document.getElementById('dock');
+  DOCK_APPS.forEach(function(a){
+    if(!a){var sep=document.createElement('div');sep.className='dock-sep';dock.appendChild(sep);return;}
+    var el=document.createElement('div'); el.className='dock-item'; el.dataset.win=a.id;
+    el.innerHTML='<div class="d-img">'+ICONS[a.id]+'</div><div class="dock-dot" id="dot-'+a.id+'"></div><div class="dock-lbl">'+a.lbl+'</div>';
+    el.addEventListener('click',()=>openWin(a.id));
+    dock.appendChild(el);
   });
 }
 
-/* ─── SERVICE CARD GLOW ─── */
-function initServiceHover(){
-  document.querySelectorAll('.sv-cell').forEach(function(cell){
-    var glow=cell.querySelector('.sv-glow');if(!glow)return;
-    cell.addEventListener('mousemove',function(e){
-      var r=cell.getBoundingClientRect();
-      glow.style.left=(e.clientX-r.left)+'px';glow.style.top=(e.clientY-r.top)+'px';
+/* ══════════════════════════════════════
+   SPOTLIGHT
+══════════════════════════════════════ */
+var SPOT_DATA=[
+  {id:'finder',lbl:'Finder',sub:'Sistema'},
+  {id:'about',lbl:'Sobre Mí',sub:'Perfil'},
+  {id:'projects',lbl:'Proyectos',sub:'Portfolio'},
+  {id:'services',lbl:'Servicios',sub:'Servicios'},
+  {id:'terminal',lbl:'Terminal',sub:'App'},
+  {id:'contact',lbl:'Contacto',sub:'Email'},
+  {id:'philosophy',lbl:'Filosofía',sub:'Notas'},
+  {id:'ipod',lbl:'iPod Web',sub:'Proyecto'},
+  {id:'saykyo',lbl:'Saykyo App',sub:'Proyecto'},
+];
+function toggleSpot(){
+  var s=document.getElementById('spotlight');
+  s.classList.toggle('on');
+  if(s.classList.contains('on')){document.getElementById('spot-q').value='';document.getElementById('spot-q').focus();renderSpot('');}
+}
+document.getElementById('spot-q').addEventListener('input',function(){renderSpot(this.value.toLowerCase());});
+document.getElementById('spot-q').addEventListener('keydown',function(e){if(e.key==='Enter'){var f=document.querySelector('.spot-item');if(f)f.click();}});
+document.getElementById('spotlight').addEventListener('click',function(e){if(e.target===this)this.classList.remove('on');});
+function renderSpot(q){
+  var f=SPOT_DATA.filter(x=>!q||x.lbl.toLowerCase().includes(q)||x.sub.toLowerCase().includes(q));
+  document.getElementById('spot-res').innerHTML=f.map(x=>`
+    <div class="spot-item" onclick="openWin('${x.id}');document.getElementById('spotlight').classList.remove('on')">
+      <div class="spot-ic">${ICONS[x.id]}</div>
+      <span class="spot-lbl">${x.lbl}</span>
+      <span class="spot-sub">${x.sub}</span>
+    </div>`).join('');
+}
+document.addEventListener('keydown',function(e){
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();toggleSpot();}
+  if(e.key==='Escape'){document.getElementById('spotlight').classList.remove('on');document.getElementById('ctx').classList.remove('on');}
+});
+
+/* ══════════════════════════════════════
+   CONTEXT MENU
+══════════════════════════════════════ */
+document.addEventListener('contextmenu',function(e){
+  if(!document.getElementById('desktop').contains(e.target)&&e.target.id!=='desktop') return;
+  e.preventDefault();
+  var m=document.getElementById('ctx');
+  m.style.left=e.clientX+'px'; m.style.top=e.clientY+'px';
+  m.innerHTML=
+    `<div class="ctx-item" onclick="openWin('finder')"><div class="ctx-ic">${ICONS.finder}</div>Abrir Finder</div>`+
+    `<div class="ctx-item" onclick="openWin('terminal')"><div class="ctx-ic">${ICONS.terminal}</div>Nueva Terminal</div>`+
+    '<div class="ctx-sep"></div>'+
+    `<div class="ctx-item" onclick="openWin('about')"><div class="ctx-ic">${ICONS.about}</div>Sobre Mí</div>`+
+    `<div class="ctx-item" onclick="openWin('contact')"><div class="ctx-ic">${ICONS.contact}</div>Contactar</div>`+
+    '<div class="ctx-sep"></div>'+
+    `<div class="ctx-item" onclick="toggleSpot()"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="flex-shrink:0"><circle cx="8.5" cy="8.5" r="5.5" stroke="rgba(0,0,0,.5)" stroke-width="1.5"/><path d="M13 13l4 4" stroke="rgba(0,0,0,.5)" stroke-width="1.5" stroke-linecap="round"/></svg>Spotlight  ⌘K</div>`;
+  m.classList.add('on');
+});
+document.addEventListener('click',()=>document.getElementById('ctx').classList.remove('on'));
+
+/* ══════════════════════════════════════
+   NOTIFICATION
+══════════════════════════════════════ */
+function notify(iconId,title,msg,delay){
+  setTimeout(function(){
+    document.getElementById('notif-ic').innerHTML=ICONS[iconId]||'';
+    document.getElementById('notif-title').textContent=title;
+    document.getElementById('notif-msg').textContent=msg;
+    var n=document.getElementById('notif'); n.classList.add('show');
+    setTimeout(()=>n.classList.remove('show'),3800);
+  },delay||0);
+}
+
+/* ══════════════════════════════════════
+   iOS HOME SCREEN
+══════════════════════════════════════ */
+var IOS_PAGES_DATA=[
+  [ // page 1
+    {id:'about',lbl:'Sobre Mí'},{id:'projects',lbl:'Proyectos'},
+    {id:'services',lbl:'Servicios'},{id:'ipod',lbl:'iPod Web'},
+    {id:'saykyo',lbl:'Saykyo'},{id:'philosophy',lbl:'Filosofía'},
+    {id:'contact',lbl:'Contacto'},
+  ],
+];
+var IOS_DOCK_DATA=[
+  {id:'contact',lbl:'Mail'},
+  {id:'about',lbl:'Perfil'},{id:'projects',lbl:'Proyectos'},{id:'services',lbl:'Servicios'},
+];
+var iosCurPage=0;
+
+function buildIos(){
+  var pages=document.getElementById('ios-pages');
+  var dots=document.getElementById('ios-dots');
+  var dock=document.getElementById('ios-dock');
+  pages.innerHTML=''; dots.innerHTML=''; dock.innerHTML='';
+
+  IOS_PAGES_DATA.forEach(function(apps,pi){
+    var page=document.createElement('div');
+    page.className='ios-page '+(pi===0?'active':'right');
+    page.id='ios-p-'+pi;
+    apps.forEach(function(a){
+      var el=document.createElement('div'); el.className='ios-icon';
+      el.innerHTML='<div class="ios-iimg">'+ICONS[a.id]+'</div><div class="ios-ilbl">'+a.lbl+'</div>';
+      el.addEventListener('click',()=>openSheet(a.id));
+      page.appendChild(el);
     });
+    pages.appendChild(page);
+    var dot=document.createElement('div');
+    dot.className='ios-dot'+(pi===0?' on':'');
+    dot.id='ios-d-'+pi; dots.appendChild(dot);
+  });
+
+  // Swipe
+  var sx=0;
+  pages.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;},{passive:true});
+  pages.addEventListener('touchend',e=>{var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50)iosSwitch(dx>0?-1:1);});
+
+  IOS_DOCK_DATA.forEach(function(a){
+    var el=document.createElement('div'); el.className='ios-icon';
+    el.innerHTML='<div class="ios-iimg" style="width:56px;height:56px;">'+ICONS[a.id]+'</div>';
+    el.addEventListener('click',()=>openSheet(a.id));
+    dock.appendChild(el);
   });
 }
-
-/* ─── SCROLL FX ─── */
-function initScrollFX(){
-  var desktop=window.innerWidth>=900;
-  var ipodStage=document.getElementById('ipod-stage');
-  var ipodFloat=document.getElementById('ipod-float');
-  var phoneStage=document.getElementById('phone-stage');
-  var phoneFloat=document.getElementById('phone-float');
-  if(!ipodFloat||!phoneFloat)return;
-  if(desktop&&ipodStage){
-    ipodStage.addEventListener('mousemove',function(e){
-      var r=ipodStage.getBoundingClientRect();
-      var dx=(e.clientX-r.left-r.width/2)/(r.width/2);
-      var dy=(e.clientY-r.top-r.height/2)/(r.height/2);
-      ipodFloat.style.transition='transform .08s';
-      ipodFloat.style.transform='perspective(900px) rotateY('+(dx*16)+'deg) rotateX('+(-dy*10)+'deg) translateZ(30px)';
-    });
-    ipodStage.addEventListener('mouseleave',function(){
-      ipodFloat.style.transition='transform .8s cubic-bezier(.23,1,.32,1)';
-      ipodFloat.style.transform='perspective(900px) rotateY(-6deg) rotateX(2deg)';
-    });
-  }
-  if(desktop&&phoneStage){
-    phoneStage.addEventListener('mousemove',function(e){
-      var r=phoneStage.getBoundingClientRect();
-      var dx=(e.clientX-r.left-r.width/2)/(r.width/2);
-      var dy=(e.clientY-r.top-r.height/2)/(r.height/2);
-      phoneFloat.style.transition='transform .08s';
-      phoneFloat.style.transform='perspective(900px) rotateY('+(dx*16)+'deg) rotateX('+(-dy*10)+'deg) translateZ(30px)';
-    });
-    phoneStage.addEventListener('mouseleave',function(){
-      phoneFloat.style.transition='transform .8s cubic-bezier(.23,1,.32,1)';
-      phoneFloat.style.transform='perspective(900px) rotateY(6deg) rotateX(2deg)';
-    });
-  }
-  function easeOut(t){return 1-Math.pow(1-t,3);}
-  function onScrollDesktop(){
-    var sy=window.scrollY;
-    var syEl=document.getElementById('sy');
-    if(syEl&&!(ipodStage&&ipodStage.matches(':hover'))){
-      var outerTop=syEl.getBoundingClientRect().top+sy;
-      var prog=Math.max(0,Math.min(1,(sy-outerTop)/syEl.offsetHeight));
-      var p1=Math.max(0,Math.min(1,prog/.25));
-      var p2=Math.max(0,Math.min(1,(prog-.25)/.5));
-      var p3=Math.max(0,Math.min(1,(prog-.75)/.25));
-      ipodFloat.style.transition='none';
-      ipodFloat.style.transform='perspective(900px) translateY('+((1-easeOut(p1))*130+easeOut(p3)*-110)+'px) rotateY('+(-6+easeOut(p1)*6+p3*-8)+'deg) rotateX('+(18-easeOut(p1)*16+p3*5)+'deg) scale('+(.82+easeOut(p1)*.18-p3*.12)+')';
-      [['an1',0],['an2',.1],['an3',.2]].forEach(function(a){
-        var el=document.getElementById(a[0]);if(!el)return;
-        var show=p2>a[1]+.08&&p3<.5;
-        el.style.opacity=show?'1':'0';
-        if(show)el.classList.add('vis');else el.classList.remove('vis');
-      });
-    }
-    var skEl=document.getElementById('sk');
-    if(skEl&&!(phoneStage&&phoneStage.matches(':hover'))){
-      var outerTop2=skEl.getBoundingClientRect().top+sy;
-      var prog2=Math.max(0,Math.min(1,(sy-outerTop2)/skEl.offsetHeight));
-      var p1b=Math.max(0,Math.min(1,prog2/.25));
-      var p2b=Math.max(0,Math.min(1,(prog2-.25)/.5));
-      var p3b=Math.max(0,Math.min(1,(prog2-.75)/.25));
-      phoneFloat.style.transition='none';
-      phoneFloat.style.transform='perspective(900px) translateY('+((1-easeOut(p1b))*130+easeOut(p3b)*-110)+'px) rotateY('+(6-easeOut(p1b)*6+p3b*8)+'deg) rotateX('+(18-easeOut(p1b)*16+p3b*5)+'deg) scale('+(.82+easeOut(p1b)*.18-p3b*.12)+')';
-      [['an4',0],['an5',.1],['an6',.2]].forEach(function(a){
-        var el=document.getElementById(a[0]);if(!el)return;
-        var show=p2b>a[1]+.08&&p3b<.5;
-        el.style.opacity=show?'1':'0';
-        if(show)el.classList.add('vis');else el.classList.remove('vis');
-      });
-    }
-  }
-  /* Mobile: misma lógica prog/p1/p2/p3 que desktop, igual de dramático */
-  function onScrollMobile(){
-    var sy=window.scrollY;
-    var syEl=document.getElementById('sy');
-    if(syEl){
-      var outerTop=syEl.getBoundingClientRect().top+sy;
-      var prog=Math.max(0,Math.min(1,(sy-outerTop)/syEl.offsetHeight));
-      var p1=Math.max(0,Math.min(1,prog/.25));
-      var p3=Math.max(0,Math.min(1,(prog-.75)/.25));
-      ipodFloat.style.transition='none';
-      ipodFloat.style.transform='perspective(700px) translateY('+((1-easeOut(p1))*110+easeOut(p3)*-90)+'px) rotateY('+(-8+easeOut(p1)*8+p3*-10)+'deg) rotateX('+(20-easeOut(p1)*18+p3*6)+'deg) scale('+(.78+easeOut(p1)*.22-p3*.12)+')';
-    }
-    var skEl=document.getElementById('sk');
-    if(skEl){
-      var outerTop2=skEl.getBoundingClientRect().top+sy;
-      var prog2=Math.max(0,Math.min(1,(sy-outerTop2)/skEl.offsetHeight));
-      var p1b=Math.max(0,Math.min(1,prog2/.25));
-      var p3b=Math.max(0,Math.min(1,(prog2-.75)/.25));
-      phoneFloat.style.transition='none';
-      phoneFloat.style.transform='perspective(700px) translateY('+((1-easeOut(p1b))*110+easeOut(p3b)*-90)+'px) rotateY('+(8-easeOut(p1b)*8+p3b*10)+'deg) rotateX('+(20-easeOut(p1b)*18+p3b*6)+'deg) scale('+(.78+easeOut(p1b)*.22-p3b*.12)+')';
-    }
-  }
-  if(desktop){window.addEventListener('scroll',onScrollDesktop,{passive:true});onScrollDesktop();}
-  else{window.addEventListener('scroll',onScrollMobile,{passive:true});onScrollMobile();}
+function iosSwitch(dir){
+  var np=iosCurPage+dir;
+  if(np<0||np>=IOS_PAGES_DATA.length)return;
+  var cur=document.getElementById('ios-p-'+iosCurPage);
+  var nxt=document.getElementById('ios-p-'+np);
+  document.getElementById('ios-d-'+iosCurPage).classList.remove('on');
+  cur.classList.remove('active'); cur.classList.add(dir>0?'left':'right');
+  nxt.classList.remove('left','right'); nxt.classList.add('active');
+  iosCurPage=np;
+  document.getElementById('ios-d-'+np).classList.add('on');
 }
-
-/* ─── REVEAL ─── */
-function initReveal(){
-  var obs=new IntersectionObserver(function(entries){
-    entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');obs.unobserve(e.target);}});
-  },{threshold:.1,rootMargin:'0px 0px -30px 0px'});
-  document.querySelectorAll('.rv').forEach(function(el){obs.observe(el);});
+var DARK_APPS = {ipod:1, saykyo:1, terminal:1};
+var GRAY_APPS = {projects:1, philosophy:1, services:1};
+function openSheet(id){
+  var def=APPS[id];if(!def)return;
+  document.getElementById('sheet-title').textContent=def.title;
+  var body=document.getElementById('sheet-body'); body.innerHTML='';
+  if(DARK_APPS[id]) body.className='ios-card-body dark-app';
+  else if(GRAY_APPS[id]) body.className='ios-card-body gray-app';
+  else body.className='ios-card-body';
+  def.build(body);
+  document.getElementById('ios-sheet').classList.add('on');
 }
+function closeSheet(){document.getElementById('ios-sheet').classList.remove('on');}
+// Swipe down sheet to close
+var sheetY=0;
+document.querySelector('.ios-card').addEventListener('touchstart',e=>{sheetY=e.touches[0].clientY;},{passive:true});
+document.querySelector('.ios-card').addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-sheetY>70)closeSheet();});
 
-/* ─── COUNTERS ─── */
-function initCounters(){
-  var container=document.getElementById('ab-stats');
-  if(container){
-    container.innerHTML='';
-    SOTELO_CONFIG.stats.forEach(function(stat){
-      var wrap=document.createElement('div');
-      var num=document.createElement('div');
-      num.className='ab-n '+stat.colorClass;
-      num.dataset.target=stat.value;
-      num.dataset.suffix=stat.suffix||'+';
-      num.textContent='0';
-      var lbl=document.createElement('div');
-      lbl.className='ab-l';
-      lbl.textContent=stat.label;
-      wrap.appendChild(num);wrap.appendChild(lbl);
-      container.appendChild(wrap);
-    });
-  }
-  var obs=new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if(e.isIntersecting){
-        var target=parseInt(e.target.dataset.target);
-        var suffix=e.target.dataset.suffix||'+';
-        var c=0;var inc=target/60;
-        var ti=setInterval(function(){
-          c+=inc;if(c>=target){c=target;clearInterval(ti);}
-          e.target.textContent=Math.round(c)+suffix;
-        },24);obs.unobserve(e.target);
-      }
-    });
-  },{threshold:.5});
-  document.querySelectorAll('[data-target]').forEach(function(el){obs.observe(el);});
-}
-
-/* ─── MAGNETIC BUTTONS ─── */
-function initMagnetic(){
-  document.querySelectorAll('.btn-a,.btn-b,.n-cta,.proj-link,.ct-soc-card').forEach(function(btn){
-    btn.addEventListener('mousemove',function(e){
-      var r=btn.getBoundingClientRect();
-      btn.style.transform='translate('+((e.clientX-r.left-r.width/2)*.2)+'px,'+((e.clientY-r.top-r.height/2)*.2)+'px)';
-    });
-    btn.addEventListener('mouseleave',function(){btn.style.transform='';btn.style.transition='transform .6s cubic-bezier(.23,1,.32,1)';});
-    btn.addEventListener('mouseenter',function(){btn.style.transition='transform .1s';});
-  });
-}
-
-/* ─── EASTER EGG ─── */
-function initEasterEgg(){
-  var logo=document.getElementById('n-logo');if(!logo)return;
-  var burstColors=['#4db8c8','#e040fb','#5ddfa8','#2a8fa0','#a800d4'];
-  logo.addEventListener('click',function(e){
-    e.preventDefault();
-    var wrapper=document.createElement('div');wrapper.className='logo-burst';
-    wrapper.style.cssText='left:'+e.clientX+'px;top:'+e.clientY+'px;';
-    var count=20;
-    for(var i=0;i<count;i++){
-      var s=document.createElement('span');
-      var angle=(i/count)*Math.PI*2;
-      var dist=50+Math.random()*70;
-      s.style.setProperty('--tx',(Math.cos(angle)*dist)+'px');
-      s.style.setProperty('--ty',(Math.sin(angle)*dist)+'px');
-      s.style.animationDelay=(Math.random()*.2)+'s';
-      var sz=3+Math.random()*7;
-      s.style.width=sz+'px';s.style.height=sz+'px';
-      s.style.background=burstColors[Math.floor(Math.random()*burstColors.length)];
-      s.style.boxShadow='0 0 8px '+burstColors[i%burstColors.length];
-      wrapper.appendChild(s);
-    }
-    document.body.appendChild(wrapper);
-    setTimeout(function(){wrapper.remove();},1300);
-  });
-}
-
+/* ══════════════════════════════════════
+   BOOT
+══════════════════════════════════════ */
+(function(){
+  var fill=document.getElementById('boot-fill'), pct=0;
+  var iv=setInterval(function(){
+    pct+=Math.random()*6+2;
+    if(pct>=100){pct=100;clearInterval(iv);setTimeout(launch,700);}
+    fill.style.width=pct+'%';
+  },90);
 })();
+
+function launch(){
+  var boot=document.getElementById('boot');
+  boot.classList.add('out');
+  setTimeout(function(){
+    boot.style.display='none';
+    if(!isMobile()){
+      buildDesktop(); buildDock();
+      // About Me centered above everything, first thing visible
+      var vw=window.innerWidth, vh=window.innerHeight;
+      var aw=520, ah=480;
+      var ax=Math.round((vw-aw)/2), ay=Math.round((vh-ah)/2 - 20);
+      setTimeout(function(){
+        openWin('about',ax,ay);
+      },150);
+      setTimeout(function(){
+        openWin('finder',36,60);
+        // Re-focus about so it appears on top at boot
+        setTimeout(function(){
+          var aboutWin=document.getElementById('w-about');
+          if(aboutWin){focusWin('about');}
+        },80);
+      },600);
+    } else {
+      buildIos();
+    }
+    setTimeout(()=>notify('about','Sotelo OS',isMobile()?'Toca los iconos para explorar · desliza para más páginas':'Clic en iconos · Clic derecho · ⌘K Spotlight'),1200);
+  },1400);
+}
+
+/* ══════════════════════════════════════
+   WOW — Cursor glow tracking
+══════════════════════════════════════ */
+(function(){
+  var glow = document.getElementById('cursor-glow');
+  if(!glow) return;
+  var mx=window.innerWidth/2, my=window.innerHeight/2;
+  var cx=mx, cy=my;
+  document.addEventListener('mousemove', function(e){
+    mx=e.clientX; my=e.clientY;
+  });
+  function animGlow(){
+    cx += (mx - cx) * 0.12;
+    cy += (my - cy) * 0.12;
+    glow.style.left = cx + 'px';
+    glow.style.top = cy + 'px';
+    requestAnimationFrame(animGlow);
+  }
+  animGlow();
+})();
+
+/* ══════════════════════════════════════
+   WOW — Floating particles
+══════════════════════════════════════ */
+(function(){
+  var container = document.getElementById('particles');
+  if(!container) return;
+  var colors = [
+    'rgba(120,170,255,.55)','rgba(200,160,100,.45)','rgba(180,130,200,.4)',
+    'rgba(100,200,180,.35)','rgba(255,200,80,.3)','rgba(150,200,255,.4)'
+  ];
+  function createParticle(){
+    var p = document.createElement('div');
+    p.className = 'particle';
+    var size = Math.random()*4+1.5;
+    var x = Math.random()*100;
+    var drift = (Math.random()-0.5)*200;
+    var dur = Math.random()*18+12;
+    var delay = Math.random()*20;
+    var color = colors[Math.floor(Math.random()*colors.length)];
+    p.style.cssText =
+      'left:'+x+'vw;bottom:-10px;width:'+size+'px;height:'+size+'px;'+
+      'background:'+color+';'+
+      '--px:'+drift+'px;'+
+      'animation-duration:'+dur+'s;animation-delay:'+delay+'s;'+
+      'box-shadow:0 0 '+size*3+'px '+color+';';
+    container.appendChild(p);
+    setTimeout(function(){p.remove();createParticle();}, (dur+delay)*1000);
+  }
+  // Create initial batch
+  for(var i=0;i<18;i++) createParticle();
+})();
+
+/* ══════════════════════════════════════
+   WOW — Window entrance stagger
+══════════════════════════════════════ */
+var _origOpenWin = openWin;
+// Patch: already handled by CSS animation, nothing extra needed.
+
+/* ══════════════════════════════════════
+   WOW — Menubar app name animation
+══════════════════════════════════════ */
+(function(){
+  var el = document.getElementById('mb-appname');
+  if(!el) return;
+  var orig = el.textContent;
+  // Subtle fade when app name changes
+  var observer = new MutationObserver(function(){
+    el.style.opacity='0';el.style.transform='translateY(-3px)';
+    setTimeout(function(){el.style.transition='opacity .2s,transform .2s';el.style.opacity='1';el.style.transform='translateY(0)';},40);
+  });
+  observer.observe(el,{childList:true,subtree:true,characterData:true});
+})();
+
+var _lastMobile = isMobile();
+window.addEventListener('resize',function(){
+  var nowMobile = isMobile();
+  if(nowMobile !== _lastMobile){
+    _lastMobile = nowMobile;
+    // Hide all open windows
+    document.getElementById('win-layer').innerHTML='';
+    Object.keys(WINS).forEach(k=>delete WINS[k]);
+    if(nowMobile){
+      // Switch to iOS
+      document.getElementById('ios-ui').style.display='flex';
+      buildIos();
+    } else {
+      // Switch to desktop
+      document.getElementById('ios-ui').style.display='none';
+      document.getElementById('ios-sheet').classList.remove('on');
+      document.getElementById('desktop').innerHTML='';
+      document.getElementById('dock').innerHTML='';
+      buildDesktop(); buildDock();
+      var vw=window.innerWidth,vh=window.innerHeight;
+      var aw=520,ah=480;
+      var ax=Math.round((vw-aw)/2),ay=Math.round((vh-ah)/2-20);
+      setTimeout(()=>openWin('about',ax,ay),150);
+    }
+  }
+});
