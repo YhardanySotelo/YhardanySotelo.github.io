@@ -993,14 +993,20 @@ var sheetY=0, sheetSwipeOk=false;
 document.querySelector('.ios-card').addEventListener('touchstart',function(e){
   sheetY=e.touches[0].clientY;
   var body=document.getElementById('sheet-body');
-  // Allow swipe-close only if tapping the handle/bar area OR content is at very top
+  // Never allow swipe-close if touching canvas, dpad, or any game element
+  var onGame=e.target.closest('#gcanvas,.g-dpad,.g-dpad-btn,.g-btn,.g-wrap');
+  if(onGame){sheetSwipeOk=false;return;}
+  // Allow only from handle/bar, OR if scrollable content is at very top
   var onHandle=e.target.closest('.ios-card-handle,.ios-card-bar');
-  sheetSwipeOk=!!onHandle||(body&&body.scrollTop<=0);
+  // Check if the body itself scrolls — if overflow is hidden, don't allow body-swipe
+  var bodyScrolls=body&&body.scrollHeight>body.clientHeight+4;
+  var bodyAtTop=body&&body.scrollTop<=0;
+  sheetSwipeOk=!!onHandle||(bodyScrolls&&bodyAtTop);
 },{passive:true});
 document.querySelector('.ios-card').addEventListener('touchend',function(e){
   if(!sheetSwipeOk)return;
   var dy=e.changedTouches[0].clientY-sheetY;
-  if(dy>160)closeSheet(); // 160px threshold — deliberate drag only
+  if(dy>160)closeSheet();
 });
 
 /* ══════════════════════════════════════
