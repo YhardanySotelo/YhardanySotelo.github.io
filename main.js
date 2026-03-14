@@ -324,7 +324,7 @@ function buildProjects(el){
         ${c.chips.map(ch=>`<span class="proj-mob-chip" style="color:${c.accent};border-color:${c.accent}22;background:${c.accent}0d;">${ch}</span>`).join('')}
       </div>
       <div class="proj-mob-cta" style="background:${c.grad};color:#fff;">
-        <span>Ver más sobre el proyecto</span>
+        <span>Ver proyecto completo</span>
         <div class="proj-mob-cta-arrow" style="background:rgba(255,255,255,.25);opacity:1;">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6h7M6 2.5l3.5 3.5L6 9.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
@@ -950,10 +950,20 @@ function openSheet(id){
   document.getElementById('ios-sheet').classList.add('on');
 }
 function closeSheet(){document.getElementById('ios-sheet').classList.remove('on');}
-// Swipe down sheet to close
-var sheetY=0;
-document.querySelector('.ios-card').addEventListener('touchstart',e=>{sheetY=e.touches[0].clientY;},{passive:true});
-document.querySelector('.ios-card').addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-sheetY>70)closeSheet();});
+// Swipe down sheet to close — only when body is at scroll top AND clearly dragging down
+var sheetY=0, sheetSwipeOk=false;
+document.querySelector('.ios-card').addEventListener('touchstart',function(e){
+  sheetY=e.touches[0].clientY;
+  var body=document.getElementById('sheet-body');
+  // Allow swipe-close only if tapping the handle/bar area OR content is at very top
+  var onHandle=e.target.closest('.ios-card-handle,.ios-card-bar');
+  sheetSwipeOk=!!onHandle||(body&&body.scrollTop<=0);
+},{passive:true});
+document.querySelector('.ios-card').addEventListener('touchend',function(e){
+  if(!sheetSwipeOk)return;
+  var dy=e.changedTouches[0].clientY-sheetY;
+  if(dy>160)closeSheet(); // 160px threshold — deliberate drag only
+});
 
 /* ══════════════════════════════════════
    BOOT
@@ -991,6 +1001,8 @@ function launch(){
       },600);
     } else {
       buildIos();
+      // Auto-open Sobre Mí on mobile, same as desktop
+      setTimeout(function(){ openSheet('about'); }, 600);
     }
     setTimeout(()=>notify('about','Sotelo OS',isMobile()?'Toca los iconos para explorar · desliza para más páginas':'Clic en iconos · Clic derecho · ⌘K Spotlight'),1200);
   },1400);
